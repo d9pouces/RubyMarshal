@@ -33,5 +33,6 @@ Usage
 Infos
 -----
 
-Code is on github: https://github.com/d9pouces/RubyMarshal.
-Documentation is on readthedocs: 
+Code is on github: https://github.com/d9pouces/RubyMarshal 
+Documentation is on readthedocs: http://rubymarshal.readthedocs.org/en/latest/ 
+Tests are on travis-ci: https://travis-ci.org/d9pouces/RubyMarshal
