@@ -2,6 +2,16 @@ RubyMarshal
 ===========
 
 Read and write Ruby-marshalled data.
+Only basics Ruby data types can be read and written: 
+
+  * `float`,
+  * `bool`,
+  * `int`,
+  * `str` (mapped to `unicode` in Python 2),
+  * `nil` (mapped to `None` in Python),
+  * `array` (mapped to `list`),
+  * `hash` (mapped to `dict`),
+  * symbols and other classes are mapped to specific Python classes.
 
 Installation
 ------------
