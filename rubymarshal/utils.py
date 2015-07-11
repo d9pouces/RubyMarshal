@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""regroup all struct functions.
+"""regroup all struct functions and some compatibility tricks for Python2/3.
 
 Do not import unicode_literals from __future__.
 """
