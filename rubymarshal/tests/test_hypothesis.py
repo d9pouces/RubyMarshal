@@ -34,7 +34,7 @@ class TestValues(TestCase):
         else:
             self.read_write(x)
 
-    @given(dictionaries(floats(), integers()))
+    @given(dictionaries(integers(), integers()))
     def test_dictionaries(self, x):
         self.read_write(x)
 

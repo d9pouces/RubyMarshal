@@ -56,7 +56,13 @@ class TestWriteLong(TestCase):
         self.assertEqual(b'\xFF\x84', long_write(-124))
 
     def test__256(self):
-        self.assertEqual(b'\xFF\x00', long_write(-256))
+        self.assertEqual(b'\xfe\x00\xff', long_write(-256))
+
+    def test__512(self):
+        self.assertEqual(b'\xfe\x00\xfe', long_write(-512))
+
+    def test__768(self):
+        self.assertEqual(b"\xFE\x00\xFD", long_write(-768))
 
     def test__257(self):
         self.assertEqual(b'\xFE\xFF\xFE', long_write(-257))
@@ -65,7 +71,7 @@ class TestWriteLong(TestCase):
         self.assertEqual(b"\xFE\xFD\xFE", long_write(-259))
 
     def test__65536(self):
-        self.assertEqual(b'\xFE\x00\x00', long_write(-65536))
+        self.assertEqual(b'\xfd\x00\x00\xff', long_write(-65536))
 
     def test__65537(self):
         self.assertEqual(b'\xFD\xFF\xFF\xFE', long_write(-65537))

@@ -168,9 +168,13 @@ class TestRegexp(TestCase):
     def test_noflag(self):
         self.assertEqual(loads(b"\x04\bI/\att\x00\x06:\x06EF"), re.compile('tt'))
 
-    def test_flag(self):
+    def test_flag_1(self):
         self.assertEqual(loads(b"\x04\bI/\att\x01\x06:\x06EF"), re.compile('tt', re.IGNORECASE))
         self.assertNotEqual(loads(b"\x04\bI/\att\x01\x06:\x06EF"), re.compile('tt'))
+
+    def test_flag_4(self):
+        self.assertEqual(loads(b"\x04\bI/\att\x04\x06:\x06EF"), re.compile('tt', re.DOTALL))
+        self.assertNotEqual(loads(b"\x04\bI/\att\x04\x06:\x06EF"), re.compile('tt'))
 
 
 class TestUsrMarshal(TestCase):

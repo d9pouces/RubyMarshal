@@ -13,6 +13,7 @@ from rubymarshal.utils import write_ushort, write_sbyte, write_ubyte, integer_ty
 __author__ = 'Matthieu Gallet'
 
 re_class = re.compile('').__class__
+simple_float_re = re.compile(r'^\d+\.\d*0+$')
 
 
 class Writer(object):
@@ -89,10 +90,10 @@ class Writer(object):
             self.write(True)
         elif isinstance(obj, float):
             obj = '%.20g' % obj
-            while obj.endswith('0') and '.' in obj:
-                obj = obj[:-1]
+            if simple_float_re.match(obj):
+                while obj.endswith('0'):
+                    obj = obj[:-1]
             obj = obj.encode('utf-8')
-            # print(obj)
             self.fd.write(TYPE_FLOAT)
             self.write_long(len(obj))
             self.fd.write(obj)
@@ -134,11 +135,12 @@ class Writer(object):
             if size > 5:
                 raise ValueError('%d too long for serialization' % obj)
             original_obj = obj
-            if obj < 0 and obj % 256 == 0:
+            factor = 256 ** size
+            if obj < 0 and obj == -factor:
                 size -= 1
-                obj += 256 ** size
+                obj += (factor / 256)
             elif obj < 0:
-                obj += 256 ** size
+                obj += factor
             sign = int(math.copysign(size, original_obj))
             write_sbyte(self.fd, sign)
             for i in range(size):
