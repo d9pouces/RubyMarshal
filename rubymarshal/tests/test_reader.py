@@ -10,6 +10,7 @@ from __future__ import unicode_literals
 import re
 import unittest
 from unittest.case import TestCase
+import math
 
 from rubymarshal.classes import Symbol, UsrMarshal
 from rubymarshal.reader import loads
@@ -57,6 +58,7 @@ class TestLong(TestCase):
 
     def test__256(self):
         self.assertEqual(loads(b'\x04\bi\xFF\x00'), -256)
+        self.assertEqual(loads(b'\x04\bi\xFE\x00\xFF'), -256)
 
     def test__257(self):
         self.assertEqual(loads(b'\x04\bi\xFE\xFF\xFE'), -257)
@@ -150,6 +152,16 @@ class TestFloat(TestCase):
 
     def test_num_1234567890_123456789(self):
         self.assertEqual(loads(b"\x04\bf\x171234567890.1234567"), 1234567890.1234567)
+
+    def test_num_inf(self):
+        self.assertEqual(loads(b"\x04\bf\binf"), float('inf'))
+
+    def test_num_nan(self):
+
+        self.assertTrue(math.isnan(loads(b"\x04\bf\bnan")))
+
+    def test_num__inf(self):
+        self.assertEqual(loads(b"\x04\bf\t-inf"), float('-inf'))
 
 
 class TestRegexp(TestCase):

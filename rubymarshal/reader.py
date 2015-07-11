@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
 import re
-import struct
 import io
 from rubymarshal.classes import UsrMarshal, Symbol
 
 from rubymarshal.constants import TYPE_NIL, TYPE_TRUE, TYPE_FALSE, TYPE_FIXNUM, TYPE_IVAR, TYPE_STRING, TYPE_SYMBOL, TYPE_ARRAY, TYPE_HASH, \
     TYPE_FLOAT, TYPE_BIGNUM, TYPE_REGEXP, TYPE_USRMARSHAL, \
     TYPE_SYMLINK, TYPE_LINK, TYPE_DATA, TYPE_OBJECT, TYPE_STRUCT, TYPE_MODULE, TYPE_CLASS
+from rubymarshal.utils import read_ushort, read_sbyte, read_ubyte
 
 __author__ = 'Matthieu Gallet'
 
@@ -81,7 +82,7 @@ class Reader(object):
             result = result
         elif token == TYPE_FLOAT:
             size = self.read_long()
-            result = float(self.fd.read(size))
+            result = float(self.fd.read(size).decode('utf-8'))
         elif token == TYPE_BIGNUM:
             sign = 1 if self.fd.read(1) == b'+' else -1
             num_elements = self.read_long()
@@ -112,13 +113,12 @@ class Reader(object):
         return result
 
     def read_short(self):
-        return struct.unpack('<H', self.fd.read(2))[0]
-    
+        return read_ushort(self.fd)
+
     def read_long(self):
-        s0 = self.fd.read(1)
-        if s0 == b'\x00':
+        l = read_sbyte(self.fd)
+        if l == 0:
             return 0
-        l, = struct.unpack('b', s0)
         if 5 < l < 128:
             return l - 5
         elif -129 < l < -5:
@@ -126,7 +126,7 @@ class Reader(object):
         result = 0
         factor = 1
         for s in range(abs(l)):
-            result += (struct.unpack('B', self.fd.read(1))[0] * factor)
+            result += (read_ubyte(self.fd) * factor)
             factor *= 256
         if l < 0:
             result = result - factor
