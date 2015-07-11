@@ -88,10 +88,11 @@ class Writer(object):
             self.write(Symbol('E'))
             self.write(True)
         elif isinstance(obj, float):
-            obj = '%.20f' % obj
-            while obj.endswith('0'):
+            obj = '%.20g' % obj
+            while obj.endswith('0') and '.' in obj:
                 obj = obj[:-1]
             obj = obj.encode('utf-8')
+            # print(obj)
             self.fd.write(TYPE_FLOAT)
             self.write_long(len(obj))
             self.fd.write(obj)
@@ -138,7 +139,7 @@ class Writer(object):
                 obj += 256 ** size
             elif obj < 0:
                 obj += 256 ** size
-            sign = math.copysign(size, original_obj)
+            sign = int(math.copysign(size, original_obj))
             write_sbyte(self.fd, sign)
             for i in range(size):
                 write_ubyte(self.fd, obj % 256)

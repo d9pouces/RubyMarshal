@@ -17,7 +17,9 @@ if PY3:
     text_type = str
     binary_type = bytes
 else:
+    # noinspection PyUnresolvedReferences
     integer_types = (int, long)
+    # noinspection PyUnresolvedReferences
     text_type = unicode
     binary_type = str
 
