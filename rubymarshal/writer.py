@@ -3,10 +3,10 @@ from __future__ import division, unicode_literals
 import re
 import io
 import math
+
 from rubymarshal.classes import Symbol, UsrMarshal
-from rubymarshal.constants import TYPE_CLASS, TYPE_BIGNUM, TYPE_STRING, TYPE_REGEXP, TYPE_ARRAY, TYPE_HASH, TYPE_STRUCT, TYPE_OBJECT, TYPE_DATA, TYPE_USRMARSHAL, TYPE_NIL, TYPE_TRUE, TYPE_FALSE, \
+from rubymarshal.constants import TYPE_BIGNUM, TYPE_STRING, TYPE_REGEXP, TYPE_ARRAY, TYPE_HASH, TYPE_USRMARSHAL, TYPE_NIL, TYPE_TRUE, TYPE_FALSE, \
     TYPE_IVAR, TYPE_LINK, TYPE_SYMLINK, TYPE_SYMBOL, TYPE_FIXNUM
-from rubymarshal.constants import TYPE_MODULE
 from rubymarshal.constants import TYPE_FLOAT
 from rubymarshal.utils import write_ushort, write_sbyte, write_ubyte, integer_types, binary_type, text_type
 
