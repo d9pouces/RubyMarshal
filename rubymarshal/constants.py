@@ -1,0 +1,31 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+__author__ = 'Matthieu Gallet'
+
+TYPE_NIL = b'0'
+TYPE_TRUE = b'T'
+TYPE_FALSE = b'F'
+TYPE_FIXNUM = b'i'
+TYPE_ARRAY = b'['
+TYPE_SYMBOL = b':'
+TYPE_STRING = b'"'
+TYPE_IVAR = b'I'
+TYPE_HASH = b'{'
+TYPE_FLOAT = b'f'
+TYPE_BIGNUM = b'l'
+TYPE_REGEXP = b'/'
+TYPE_USRMARSHAL = b'U'
+TYPE_SYMLINK = b';'
+TYPE_LINK = b'@'
+
+
+TYPE_EXTENDED = b'e'
+TYPE_UCLASS = b'C'
+TYPE_OBJECT = b'o'
+TYPE_DATA = b'd'
+TYPE_USERDEF = b'u'
+TYPE_HASH_DEF = b'}'
+TYPE_STRUCT = b'S'
+TYPE_MODULE_OLD = b'M'
+TYPE_CLASS = b'c'
+TYPE_MODULE = b'm'
