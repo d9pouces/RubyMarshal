@@ -18,7 +18,7 @@ setup(
     long_description=long_description,
     author='Matthieu Gallet',
     author_email='python-dev@19pouces.net',
-    license='CeCILL-B',
+    license='WTFPL',
     url='https://github.com/d9pouces/RubyMarshal',
     packages=find_packages(),
     include_package_data=True,
