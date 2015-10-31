@@ -2,23 +2,25 @@
 from __future__ import unicode_literals
 import re
 import io
-from rubymarshal.classes import UsrMarshal, Symbol
+from rubymarshal.classes import UsrMarshal, Symbol, UserDef, Extended, Object, Module
 
 from rubymarshal.constants import TYPE_NIL, TYPE_TRUE, TYPE_FALSE, TYPE_FIXNUM, TYPE_IVAR, TYPE_STRING, TYPE_SYMBOL, TYPE_ARRAY, TYPE_HASH, \
     TYPE_FLOAT, TYPE_BIGNUM, TYPE_REGEXP, TYPE_USRMARSHAL, \
-    TYPE_SYMLINK, TYPE_LINK, TYPE_DATA, TYPE_OBJECT, TYPE_STRUCT, TYPE_MODULE, TYPE_CLASS
+    TYPE_SYMLINK, TYPE_LINK, TYPE_DATA, TYPE_OBJECT, TYPE_STRUCT, TYPE_MODULE, TYPE_CLASS, TYPE_USERDEF, TYPE_EXTENDED
 from rubymarshal.utils import read_ushort, read_sbyte, read_ubyte
 
 __author__ = 'Matthieu Gallet'
 
 
 class Reader(object):
-    def __init__(self, fd):
+    def __init__(self, fd, usr_marshal_mapping=None, userdef_mapping=None):
         self.symbols = []
         self.objects = []
         self.fd = fd
+        self.usr_marshal_mapping = usr_marshal_mapping or {}
+        self.userdef_mapping = userdef_mapping or {}
 
-    def read(self, token=None):
+    def read(self, token=None, ivar=False):
         if token is None:
             token = self.fd.read(1)
         object_index = None
@@ -33,8 +35,10 @@ class Reader(object):
             result = False
         elif token == TYPE_IVAR:
             sub_token = self.fd.read(1)
-            content = self.read(sub_token)
+            content = self.read(sub_token, ivar=True)
             flags = None
+            if sub_token != TYPE_STRING:
+                print(token,  sub_token, '-----')
             if sub_token == TYPE_REGEXP:
                 options = ord(self.fd.read(1))
                 flags = 0
@@ -42,9 +46,10 @@ class Reader(object):
                     flags |= re.IGNORECASE
                 if options & 4:
                     flags |= re.DOTALL
-            if sub_token in (TYPE_STRING, TYPE_REGEXP):
+            if sub_token in (TYPE_STRING, TYPE_REGEXP, TYPE_USERDEF):
                 encoding = 'latin1'
                 attr_count = self.read_long()
+                attrs = {}
                 for x in range(attr_count):
                     attr_name = self.read()
                     attr_value = self.read()
@@ -52,7 +57,9 @@ class Reader(object):
                         encoding = 'utf-8'
                     elif attr_name == Symbol('encoding'):
                         encoding = attr_value.decode('utf-8')
-                content = content.decode(encoding)
+                    attrs[attr_name] = attr_value
+                if sub_token in (TYPE_STRING, TYPE_REGEXP):
+                    content = content.decode(encoding)
             else:
                 raise ValueError
             if sub_token == TYPE_REGEXP:
@@ -62,10 +69,7 @@ class Reader(object):
             size = self.read_long()
             result = self.fd.read(size)
         elif token == TYPE_SYMBOL:
-            size = self.read_long()
-            result = self.fd.read(size)
-            result = Symbol(result.decode('utf-8'))
-            self.symbols.append(result)
+            result = self.read_symreal()
         elif token == TYPE_FIXNUM:
             result = self.read_long()
         elif token == TYPE_ARRAY:
@@ -98,15 +102,39 @@ class Reader(object):
         elif token == TYPE_USRMARSHAL:
             class_name = self.read()
             attr_list = self.read()
-            result = UsrMarshal(class_name, attr_list)
+            cls = self.usr_marshal_mapping.get(class_name, UsrMarshal)
+            result = cls(class_name, attr_list)
         elif token == TYPE_SYMLINK:
-            symlink_id = self.read_long()
-            result = self.symbols[symlink_id]
+            result = self.read_symlink()
         elif token == TYPE_LINK:
             link_id = self.read_long()
             result = self.objects[link_id]
+        elif token == TYPE_USERDEF:
+            class_name = self.read()
+            data = self.read(TYPE_STRING)
+            if not ivar:
+                data = loads(data)
+            result = UserDef(class_name, data)
+            print(result)
+        elif token == TYPE_MODULE:
+            module_name = self.read()
+            result = Module(module_name, None)
+        elif token == TYPE_OBJECT:
+            class_name = self.read()
+            data = self.read(TYPE_STRING)
+            # attr_count = self.read_long()
+            # # noinspection PyUnusedLocal
+            # attrs = {self.read(): self.read() for x in range(attr_count)}
+            if not ivar:
+                data = self.read()
+            result = Object(class_name, data)
+            print(result)
+        elif token == TYPE_EXTENDED:
+            class_name = self.read(TYPE_STRING)
+            print(class_name)
+            result = Extended(class_name, None)
         else:
-            raise ValueError
+            raise ValueError('token %s is not recognized' % token)
         if object_index is not None:
             self.objects[object_index - 1] = result
         # print('end', result, object_index, self.objects)
@@ -131,7 +159,31 @@ class Reader(object):
         if l < 0:
             result = result - factor
         return result
-    
+
+    def read_symbol(self):
+        ivar = 0
+        while True:
+            token = self.fd.read(1)
+            if token == TYPE_IVAR:
+                ivar = 1
+            elif token == TYPE_SYMBOL:
+                return self.read_symreal()
+            elif token == TYPE_SYMLINK:
+                if ivar:
+                    raise ValueError('dump format error (symlink with encoding)')
+                return self.read_symlink()
+
+    def read_symlink(self):
+        symlink_id = self.read_long()
+        return self.symbols[symlink_id]
+
+    def read_symreal(self):
+        size = self.read_long()
+        result = self.fd.read(size)
+        result = Symbol(result.decode('utf-8'))
+        self.symbols.append(result)
+        return result
+
 
 def load(fd):
     assert fd.read(1) == b'\x04'

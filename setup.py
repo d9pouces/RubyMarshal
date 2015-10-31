@@ -4,8 +4,9 @@
 
 import codecs
 import os.path
-import sys
+
 from setuptools import setup, find_packages
+
 from rubymarshal import __version__ as version
 
 with codecs.open(os.path.join(os.path.dirname(__file__), 'README.md'), encoding='utf-8') as fd:

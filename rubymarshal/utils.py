@@ -4,9 +4,9 @@
 Do not import unicode_literals from __future__.
 """
 import sys
+import struct
 
 __author__ = 'Matthieu Gallet'
-import struct
 
 # Useful for very coarse version differentiation.
 PY2 = sys.version_info[0] == 2
