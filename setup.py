@@ -12,7 +12,7 @@ from setuptools import setup, find_packages
 with codecs.open(os.path.join(os.path.dirname(__file__), 'README.md'), encoding='utf-8') as fd:
     long_description = fd.read()
 version = None
-for line in codecs.open(os.path.join('moneta', '__init__.py'), 'r', encoding='utf-8'):
+for line in codecs.open(os.path.join('rubymarshal', '__init__.py'), 'r', encoding='utf-8'):
     matcher = re.match(r"""^__version__\s*=\s*['"](.*)['"]\s*$""", line)
     version = version or matcher and matcher.group(1)
 
