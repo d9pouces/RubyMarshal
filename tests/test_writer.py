@@ -228,12 +228,12 @@ class TestRegexp(TestIdemPotent):
 
     def test_flag(self):
         self.read_write(re.compile("tt", re.IGNORECASE))
-        self.read_write(re.compile("tt", re.DOTALL))
+        self.read_write(re.compile("tt", re.MULTILINE))
 
 
 class TestUsrMarshal(TestIdemPotent):
     def test_usr(self):
-        a = UsrMarshal("Gem::Version", ["0.1.2"])
+        a = UsrMarshal(Symbol("Gem::Version"), ["0.1.2"])
         self.read_write(a)
 
 

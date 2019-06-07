@@ -131,3 +131,6 @@ class Symbol:
 
     def __str__(self):
         return ":%s" % self.name
+
+    def encode(self, *args, **kwargs):
+        return self.name.encode(*args, **kwargs)
