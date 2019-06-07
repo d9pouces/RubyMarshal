@@ -1,22 +1,38 @@
-# -*- coding: utf-8 -*-
-from __future__ import division, unicode_literals
-import re
 import io
 import math
+import re
 
-from rubymarshal.classes import Symbol, UsrMarshal
-from rubymarshal.constants import TYPE_BIGNUM, TYPE_STRING, TYPE_REGEXP, TYPE_ARRAY, TYPE_HASH, TYPE_USRMARSHAL, TYPE_NIL, TYPE_TRUE, TYPE_FALSE, \
-    TYPE_IVAR, TYPE_LINK, TYPE_SYMLINK, TYPE_SYMBOL, TYPE_FIXNUM
+from rubymarshal.classes import Symbol, UsrMarshal, UserDef, Object, String, Module, Class
+from rubymarshal.constants import (
+    TYPE_BIGNUM,
+    TYPE_STRING,
+    TYPE_REGEXP,
+    TYPE_ARRAY,
+    TYPE_HASH,
+    TYPE_USRMARSHAL,
+    TYPE_NIL,
+    TYPE_TRUE,
+    TYPE_FALSE,
+    TYPE_IVAR,
+    TYPE_LINK,
+    TYPE_SYMLINK,
+    TYPE_SYMBOL,
+    TYPE_FIXNUM,
+    TYPE_USERDEF, TYPE_CLASS, TYPE_MODULE, TYPE_OBJECT)
 from rubymarshal.constants import TYPE_FLOAT
-from rubymarshal.utils import write_ushort, write_sbyte, write_ubyte, integer_types, binary_type, text_type
+from rubymarshal.utils import (
+    write_ushort,
+    write_sbyte,
+    write_ubyte,
+)
 
-__author__ = 'Matthieu Gallet'
+__author__ = "Matthieu Gallet"
 
-re_class = re.compile('').__class__
-simple_float_re = re.compile(r'^\d+\.\d*0+$')
+re_class = re.compile("").__class__
+simple_float_re = re.compile(r"^\d+\.\d*0+$")
 
 
-class Writer(object):
+class Writer:
     def __init__(self, fd):
         self.symbols = {}
         self.objects = {}
@@ -30,7 +46,7 @@ class Writer(object):
             self.fd.write(TYPE_FALSE)
         elif obj is True:
             self.fd.write(TYPE_TRUE)
-        elif isinstance(obj, int) or isinstance(obj, integer_types[-1]):
+        elif isinstance(obj, int):
             if obj.bit_length() <= 5 * 8:
                 self.fd.write(TYPE_FIXNUM)
                 # noinspection PyTypeChecker
@@ -38,11 +54,11 @@ class Writer(object):
             else:
                 self.fd.write(TYPE_BIGNUM)
                 if obj < 0:
-                    self.fd.write(b'-')
+                    self.fd.write(b"-")
                 else:
-                    self.fd.write(b'+')
+                    self.fd.write(b"+")
                 obj = abs(obj)
-                size = int(math.ceil(obj.bit_length() / 16.))
+                size = int(math.ceil(obj.bit_length() / 16.0))
                 self.write_long(size)
                 for i in range(size):
                     self.write_short(obj % 65536)
@@ -55,7 +71,7 @@ class Writer(object):
                 self.fd.write(TYPE_SYMBOL)
                 symbol_index = len(self.symbols)
                 self.symbols[obj.name] = symbol_index
-                encoded = obj.name.encode('utf-8')
+                encoded = obj.name.encode("utf-8")
                 self.write_long(len(encoded))
                 self.fd.write(encoded)
         elif isinstance(obj, list):
@@ -71,29 +87,51 @@ class Writer(object):
                 for key, value in obj.items():
                     self.write(key)
                     self.write(value)
-        elif isinstance(obj, binary_type):
+        elif isinstance(obj, bytes):
             self.fd.write(TYPE_IVAR)
             self.fd.write(TYPE_STRING)
             self.write_long(len(obj))
             self.fd.write(obj)
             self.write_long(1)
-            self.write(Symbol('E'))
+            self.write(Symbol("E"))
             self.write(False)
-        elif isinstance(obj, text_type):
-            obj = obj.encode('utf-8')
+        elif isinstance(obj, str):
+            obj = obj.encode("utf-8")
             self.fd.write(TYPE_IVAR)
             self.fd.write(TYPE_STRING)
             self.write_long(len(obj))
             self.fd.write(obj)
             self.write_long(1)
-            self.write(Symbol('E'))
+            self.write(Symbol("E"))
             self.write(True)
+        elif isinstance(obj, String):
+            encoding = "utf-8"
+            if Symbol("E") in obj.attrs and not obj.attrs[Symbol("E")]:
+                encoding = "latin-1"
+            elif Symbol("encoding") in obj.attrs:
+                encoding = obj.attrs[Symbol("encoding")]
+            else:
+                obj.attrs[Symbol("E")] = True
+            encoded = obj.encode(encoding)
+            self.fd.write(TYPE_IVAR)
+            self.fd.write(TYPE_STRING)
+            self.write_long(len(encoded))
+            self.fd.write(encoded)
+            self.write_long(len(obj.attrs))
+            for k, v in obj.attrs.items():
+                self.write(k)
+                if k == Symbol("encoding"):
+                    self.fd.write(TYPE_STRING)
+                    self.write_long(len(v.encode()))
+                    self.fd.write(v.encode())
+                else:
+                    self.write(v)
         elif isinstance(obj, float):
-            obj = '%.20g' % obj
+            obj = "%.20g" % obj
             if simple_float_re.match(obj):
-                while obj.endswith('0'):
+                while obj.endswith("0"):
                     obj = obj[:-1]
-            obj = obj.encode('utf-8')
+            obj = obj.encode("utf-8")
             self.fd.write(TYPE_FLOAT)
             self.write_long(len(obj))
             self.fd.write(obj)
@@ -101,44 +139,80 @@ class Writer(object):
             flags = 0
             if obj.flags & re.IGNORECASE:
                 flags += 1
-            if obj.flags & re.DOTALL:
+            if obj.flags & re.MULTILINE:
                 flags += 4
             self.fd.write(TYPE_IVAR)
             self.fd.write(TYPE_REGEXP)
-            pattern = obj.pattern.encode('utf-8')
+            pattern = obj.pattern.encode("utf-8")
             self.write_long(len(pattern))
             self.fd.write(pattern)
             write_ubyte(self.fd, flags)
             self.write_long(1)
-            self.write(Symbol('E'))
+            self.write(Symbol("E"))
             self.write(False)
+        elif isinstance(obj, Module):
+            self.fd.write(TYPE_MODULE)
+            self.write_long(len(obj.cls.encode()))
+            self.fd.write(obj.cls.encode())
         elif isinstance(obj, UsrMarshal):
             if self.must_write(obj):
                 self.fd.write(TYPE_USRMARSHAL)
                 self.write(Symbol(obj.cls))
                 self.write(obj.values)
+        elif isinstance(obj, UserDef):
+            self.fd.write(TYPE_USERDEF)
+            name = obj.cls
+            if isinstance(name, Symbol):
+                self.write(name)
+            else:
+                encoded = name.encode("utf-8")
+                self.write_long(len(encoded))
+                self.fd.write(encoded)
+            bdata = writes(obj.values)
+            self.write_long(len(bdata))
+            self.fd.write(bdata)
+        elif isinstance(obj, Object):
+            self.fd.write(TYPE_OBJECT)
+            self.write(obj.cls)
+            if not isinstance(obj.values, dict):
+                raise ValueError("%r values is not a dict" % obj)
+            self.write_long(len(obj.values))
+            for k, v in obj.values.items():
+                self.write(k)
+                self.write(v)
+        elif isinstance(obj, Class):
+            self.fd.write(TYPE_CLASS)
+            self.write_long(len(obj.cls.encode()))
+            self.fd.write(obj.cls.encode())
         else:
-            raise ValueError(obj)
+            raise ValueError("unmarshable object: %s(%r)" % (obj.__class__.__name__, obj))
+
+    def show(self, size=10, prefix="->"):
+        pos = self.fd.tell()
+        new_pos = max(0, pos - size)
+        self.fd.seek(new_pos)
+        print("%s %r" % (prefix, self.fd.read(pos - new_pos)))
+        self.fd.seek(pos)
 
     def write_short(self, obj):
         write_ushort(self.fd, obj)
 
     def write_long(self, obj):
         if obj == 0:
-            self.fd.write(b'\0')
+            self.fd.write(b"\0")
         elif 0 < obj < 123:
             write_sbyte(self.fd, obj + 5)
         elif -124 < obj < 0:
             write_sbyte(self.fd, obj - 5)
         else:
-            size = int(math.ceil(obj.bit_length() / 8.))
+            size = int(math.ceil(obj.bit_length() / 8.0))
             if size > 5:
-                raise ValueError('%d too long for serialization' % obj)
+                raise ValueError("%d too long for serialization" % obj)
             original_obj = obj
             factor = 256 ** size
             if obj < 0 and obj == -factor:
                 size -= 1
-                obj += (factor / 256)
+                obj += factor / 256
             elif obj < 0:
                 obj += factor
             sign = int(math.copysign(size, original_obj))
@@ -159,7 +233,7 @@ class Writer(object):
 
 
 def write(fd, obj):
-    fd.write(b'\x04\x08')
+    fd.write(b"\x04\x08")
     writer = Writer(fd)
     writer.write(obj)
 

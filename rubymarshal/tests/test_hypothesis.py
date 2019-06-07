@@ -1,14 +1,15 @@
-# -*- coding: utf-8 -*-
 from unittest import TestCase
+
 # noinspection PyPackageRequirements
 from hypothesis import given
+
 # noinspection PyPackageRequirements
 from hypothesis.strategies import integers, lists, booleans, floats, dictionaries, text
 import math
 from rubymarshal.reader import loads
 from rubymarshal.writer import writes
 
-__author__ = 'Matthieu Gallet'
+__author__ = "Matthieu Gallet"
 
 
 class TestValues(TestCase):

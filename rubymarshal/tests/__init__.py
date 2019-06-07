@@ -9,4 +9,5 @@ You should consider to install :mod:`Distribute` to run all tests with::
 
 """
 from __future__ import unicode_literals
-__author__ = 'Matthieu Gallet'
+
+__author__ = "Matthieu Gallet"
