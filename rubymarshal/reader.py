@@ -84,18 +84,9 @@ class Reader:
                     flags |= re.IGNORECASE
                 if options & 4:
                     flags |= re.MULTILINE
-            encoding = "latin1"
-            attr_count = self.read_long()
-            attrs = {}
-            for x in range(attr_count):
-                attr_name = self.read()
-                attr_value = self.read()
-                if attr_name == Symbol("E") and attr_value is True:
-                    encoding = "utf-8"
-                elif attr_name == Symbol("encoding"):
-                    encoding = attr_value.decode("utf-8")
-                attrs[attr_name.name] = attr_value
+            attrs = self.read_attributes()
             if sub_token in (TYPE_STRING, TYPE_REGEXP):
+                encoding = self._get_encoding(attrs)
                 result = result.decode(encoding)
             # string instance attributes are discarded
             if attrs and sub_token == TYPE_STRING:
@@ -155,20 +146,15 @@ class Reader:
                 raise ValueError("invalid class name: %r" % class_name)
             python_class = self.userdef_mapping.get(class_name.name, UserDef)
             result = python_class(class_name)
-            result.load(private_data)
+            # noinspection PyProtectedMember
+            result._load(private_data)
         elif token == TYPE_MODULE:
             data = self.read(TYPE_STRING)
             module_name = data.decode()
             result = Module(module_name, None)
         elif token == TYPE_OBJECT:
             class_name = self.read()
-            attr_count = self.read_long()
-            # noinspection PyUnusedLocal
-            attrs = {}
-            for index in range(attr_count):
-                key = self.read()
-                value = self.read()
-                attrs[key] = value
+            attrs = self.read_attributes()
             result = Object(class_name, attrs)
         elif token == TYPE_EXTENDED:
             class_name = self.read(TYPE_STRING)
@@ -182,6 +168,23 @@ class Reader:
         if object_index is not None:
             self.objects[object_index - 1] = result
         return result
+
+    def _get_encoding(self, attrs):
+        encoding = "latin1"
+        if attrs.get("E") is True:
+            encoding = "utf-8"
+        elif "encoding" in attrs:
+            encoding = attrs["encoding"].decode()
+        return encoding
+
+    def read_attributes(self):
+        attr_count = self.read_long()
+        attrs = {}
+        for x in range(attr_count):
+            attr_name = self.read()
+            attr_value = self.read()
+            attrs[attr_name.name] = attr_value
+        return attrs
 
     def read_short(self):
         return read_ushort(self.fd)

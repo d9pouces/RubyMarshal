@@ -108,7 +108,7 @@ class TestBlog(TestCase):
 
     def test_user_object_instances(self):
         self.check(
-            Object(Symbol("DumpTest"), {Symbol("@a"): None}),
+            Object(Symbol("DumpTest"), {"@a": None}),
             "6f3a 0d44 756d 7054 6573 7406 3a07 4061 30",
         )
 

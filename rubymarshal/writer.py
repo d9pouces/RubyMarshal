@@ -147,7 +147,8 @@ class Writer:
             if self.must_write(obj):
                 self.fd.write(TYPE_USRMARSHAL)
                 self.write(Symbol(obj.cls))
-                self.write(obj.attributes)
+                obj_attributes = obj.attributes
+                self.write(obj_attributes)
         elif isinstance(obj, UserDef):
             if self.must_write(obj):
                 if obj.attributes:
@@ -160,7 +161,7 @@ class Writer:
                     encoded = name.encode("utf-8")
                     self.write_long(len(encoded))
                     self.fd.write(encoded)
-                bdata = obj.dump()
+                bdata = obj._dump()
                 self.write_long(len(bdata))
                 self.fd.write(bdata)
                 if obj.attributes:

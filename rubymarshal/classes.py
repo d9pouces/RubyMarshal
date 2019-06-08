@@ -89,7 +89,15 @@ class Class(RubyClass):
 
 
 class UsrMarshal(RubyClass):
-    pass
+    def __init__(self, cls, attributes=None):
+        self._private_data = None
+        super().__init__(cls, attributes=attributes)
+
+    def marshal_load(self, private_data):
+        self._private_data = private_data
+
+    def marshal_dump(self):
+        return self._private_data
 
 
 class UserDef(RubyClass):
@@ -103,10 +111,10 @@ The class method _load is called on the class with a string created from the byt
         self._private_data = None
         super().__init__(cls, attributes=attributes)
 
-    def load(self, private_data: bytes):
+    def _load(self, private_data: bytes):
         self._private_data = private_data
 
-    def dump(self) -> bytes:
+    def _dump(self) -> bytes:
         return self._private_data
 
 
