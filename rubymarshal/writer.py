@@ -39,7 +39,6 @@ class Writer:
         self.fd = fd
 
     def write(self, obj):
-
         if obj is None:
             self.fd.write(TYPE_NIL)
         elif obj is False:
@@ -88,13 +87,9 @@ class Writer:
                     self.write(key)
                     self.write(value)
         elif isinstance(obj, bytes):
-            self.fd.write(TYPE_IVAR)
             self.fd.write(TYPE_STRING)
             self.write_long(len(obj))
             self.fd.write(obj)
-            self.write_long(1)
-            self.write(Symbol("E"))
-            self.write(False)
         elif isinstance(obj, str):
             obj = obj.encode("utf-8")
             self.fd.write(TYPE_IVAR)
@@ -107,26 +102,19 @@ class Writer:
         elif isinstance(obj, String):
             if self.must_write(obj):
                 encoding = "utf-8"
-                if Symbol("E") in obj.attrs and not obj.attrs[Symbol("E")]:
+                attributes = obj.attributes
+                if "E" in attributes and not attributes["E"]:
                     encoding = "latin-1"
-                elif Symbol("encoding") in obj.attrs:
-                    encoding = obj.attrs[Symbol("encoding")]
+                elif "encoding" in attributes:
+                    encoding = attributes["encoding"].decode()
                 else:
-                    obj.attrs[Symbol("E")] = True
+                    attributes["E"] = True
                 encoded = obj.encode(encoding)
                 self.fd.write(TYPE_IVAR)
                 self.fd.write(TYPE_STRING)
                 self.write_long(len(encoded))
                 self.fd.write(encoded)
-                self.write_long(len(obj.attrs))
-                for k, v in obj.attrs.items():
-                    self.write(k)
-                    if k == Symbol("encoding"):
-                        self.fd.write(TYPE_STRING)
-                        self.write_long(len(v.encode()))
-                        self.fd.write(v.encode())
-                    else:
-                        self.write(v)
+                self.write_attributes(attributes)
         elif isinstance(obj, float):
             obj = "%.20g" % obj
             if simple_float_re.match(obj):
@@ -159,35 +147,43 @@ class Writer:
             if self.must_write(obj):
                 self.fd.write(TYPE_USRMARSHAL)
                 self.write(Symbol(obj.cls))
-                self.write(obj.values)
+                self.write(obj.attributes)
         elif isinstance(obj, UserDef):
-            self.fd.write(TYPE_USERDEF)
-            name = obj.cls
-            if isinstance(name, Symbol):
-                self.write(name)
-            else:
-                encoded = name.encode("utf-8")
-                self.write_long(len(encoded))
-                self.fd.write(encoded)
-            bdata = writes(obj.values)
-            self.write_long(len(bdata))
-            self.fd.write(bdata)
+            if self.must_write(obj):
+                if obj.attributes:
+                    self.fd.write(TYPE_IVAR)
+                self.fd.write(TYPE_USERDEF)
+                name = obj.cls
+                if isinstance(name, Symbol):
+                    self.write(name)
+                else:
+                    encoded = name.encode("utf-8")
+                    self.write_long(len(encoded))
+                    self.fd.write(encoded)
+                bdata = obj.dump()
+                self.write_long(len(bdata))
+                self.fd.write(bdata)
+                if obj.attributes:
+                    self.write_attributes(obj.attributes)
         elif isinstance(obj, Object):
             if self.must_write(obj):
                 self.fd.write(TYPE_OBJECT)
                 self.write(obj.cls)
-                if not isinstance(obj.values, dict):
+                if not isinstance(obj.attributes, dict):
                     raise ValueError("%r values is not a dict" % obj)
-                self.write_long(len(obj.values))
-                for k, v in obj.values.items():
-                    self.write(k)
-                    self.write(v)
+                self.write_attributes(obj.attributes)
         elif isinstance(obj, Class):
             self.fd.write(TYPE_CLASS)
             self.write_long(len(obj.cls.encode()))
             self.fd.write(obj.cls.encode())
         else:
             raise ValueError("unmarshable object: %s(%r)" % (obj.__class__.__name__, obj))
+
+    def write_attributes(self, attributes):
+        self.write_long(len(attributes))
+        for attr_name, attr_value in attributes.items():
+            self.write(Symbol(attr_name))
+            self.write(attr_value)
 
     def show(self, size=10, prefix="->"):
         pos = self.fd.tell()

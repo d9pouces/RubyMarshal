@@ -46,7 +46,7 @@ class Reader:
         self.usr_marshal_mapping = usr_marshal_mapping or {}
         self.userdef_mapping = userdef_mapping or {}
 
-    def read(self, token=None, ivar=False):
+    def read(self, token=None):
         if token is None:
             token = self.fd.read(1)
         object_index = None
@@ -75,7 +75,7 @@ class Reader:
             result = False
         elif token == TYPE_IVAR:
             sub_token = self.fd.read(1)
-            content = self.read(sub_token, ivar=True)
+            result = self.read(sub_token)
             flags = None
             if sub_token == TYPE_REGEXP:
                 options = ord(self.fd.read(1))
@@ -84,29 +84,26 @@ class Reader:
                     flags |= re.IGNORECASE
                 if options & 4:
                     flags |= re.MULTILINE
-            if sub_token in (TYPE_STRING, TYPE_REGEXP, TYPE_USERDEF):
-                encoding = "latin1"
-                attr_count = self.read_long()
-                attrs = {}
-                for x in range(attr_count):
-                    attr_name = self.read()
-                    attr_value = self.read()
-                    if attr_name == Symbol("E") and attr_value is True:
-                        encoding = "utf-8"
-                    elif attr_name == Symbol("encoding"):
-                        attr_value = attr_value.decode("utf-8")
-                        encoding = attr_value
-                    attrs[attr_name] = attr_value
-                if sub_token in (TYPE_STRING, TYPE_REGEXP):
-                    content = content.decode(encoding)
-                # string instance attributes are discarded
-                if attrs:
-                    content = String(content, attrs)
-            else:
-                raise ValueError
+            encoding = "latin1"
+            attr_count = self.read_long()
+            attrs = {}
+            for x in range(attr_count):
+                attr_name = self.read()
+                attr_value = self.read()
+                if attr_name == Symbol("E") and attr_value is True:
+                    encoding = "utf-8"
+                elif attr_name == Symbol("encoding"):
+                    encoding = attr_value.decode("utf-8")
+                attrs[attr_name.name] = attr_value
+            if sub_token in (TYPE_STRING, TYPE_REGEXP):
+                result = result.decode(encoding)
+            # string instance attributes are discarded
+            if attrs and sub_token == TYPE_STRING:
+                result = String(result, attrs)
             if sub_token == TYPE_REGEXP:
-                content = re.compile(str(content), flags)
-            result = content
+                result = re.compile(str(result), flags)
+            elif attrs:
+                result.attributes = attrs
         elif token == TYPE_STRING:
             size = self.read_long()
             result = self.fd.read(size)
@@ -153,10 +150,12 @@ class Reader:
             result = self.objects[link_id]
         elif token == TYPE_USERDEF:
             class_name = self.read()
-            data = self.read(TYPE_STRING)
-            if not ivar:
-                data = loads(data)
-            result = UserDef(Symbol(class_name), data)
+            private_data = self.read(TYPE_STRING)
+            if not isinstance(class_name, Symbol):
+                raise ValueError("invalid class name: %r" % class_name)
+            python_class = self.userdef_mapping.get(class_name.name, UserDef)
+            result = python_class(class_name)
+            result.load(private_data)
         elif token == TYPE_MODULE:
             data = self.read(TYPE_STRING)
             module_name = data.decode()
@@ -170,8 +169,6 @@ class Reader:
                 key = self.read()
                 value = self.read()
                 attrs[key] = value
-            # if not ivar:
-            #     data = self.read()
             result = Object(class_name, attrs)
         elif token == TYPE_EXTENDED:
             class_name = self.read(TYPE_STRING)

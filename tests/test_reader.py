@@ -76,12 +76,12 @@ class TestBlog(TestCase):
 
     def test_ivar(self):
         self.check("hello", "4922 0a68 656c 6c6f 063a 0645 54")
-        self.check(String("hello", {Symbol("E"): False}), "4922 0a68 656c 6c6f 063a 0645 46")
+        self.check(String("hello", {"E": False}), "4922 0a68 656c 6c6f 063a 0645 46")
         self.check(
-            String("hello", {Symbol("encoding"): "Shift_JIS"}),
+            String("hello", {"encoding": b"Shift_JIS"}),
             "4922 0a68 656c 6c6f 063a 0d65 6e63 6f64 696e 6722 0e53 6869 6674 5f4a 4953",
         )
-        self.check(String("hello", {Symbol("E"): True, Symbol("@test"): None}), "4922 0a68 656c 6c6f 073a 0645 543a 0a40 7465 7374 30")
+        self.check(String("hello", {"E": True, "@test": None}), "4922 0a68 656c 6c6f 073a 0645 543a 0a40 7465 7374 30")
 
     def test_raw_strings(self):
         self.check("hello", "4922 0a68 656c 6c6f 063a 0645 54")
@@ -309,6 +309,17 @@ class TestSymlink(TestCase):
 
 
 class TestMarshalGemSpec(TestCase):
+    """Marshal.load(open("/tmp/raw"))"""
+
+    def double_check(self, bytes_value: bytes):
+        fd = io.BytesIO(bytes_value)
+        bytes_to_obj = load(fd)
+        self.assertEqual(b"", fd.read())
+        obj_to_bytes = writes(bytes_to_obj)
+        self.assertEqual(bytes_value, obj_to_bytes)
+
+    def test_time(self):
+        self.double_check(b"\x04\bIu:\tTime\r\xC0\xDB\x1C\xC0\x00\x00\x00\x00\x06:\tzoneI\"\bUTC\x06:\x06EF")
 
     def test_subgem_spec(self):
         raw_src = (b'\x04\x08[\x18I"\n2.2.2\x06:\x06ETi\tI"\x14capistrano-demo\x06;\x00'
@@ -368,7 +379,7 @@ class TestMarshalGemSpec(TestCase):
         raw_dst = writes(actual_obj)
         dst_obj = loads(raw_dst)
         self.assertEqual(actual_obj, dst_obj)
-        # self.assertEqual(raw_src, raw_dst)
+        self.assertEqual(raw_src, raw_dst)
 
 
 class TestLink(TestCase):
