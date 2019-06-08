@@ -25,10 +25,7 @@ class DemoDomainError(RubyObject):
     ruby_class_name = "Math::DomainError"
 
 
-class_mapping = {
-    "String": DemoString,
-    "Math::DomainError": DemoDomainError
-}
+class_mapping = {"String": DemoString, "Math::DomainError": DemoDomainError}
 
 
 class TestBlog(TestCase):
@@ -37,7 +34,7 @@ class TestBlog(TestCase):
     def check(self, a, b):
         b = b.replace(" ", "")
         bytes_array = [4, 8] + [
-            int(b[2 * i: 2 * i + 2], 16) for i in range(len(b) // 2)
+            int(b[2 * i : 2 * i + 2], 16) for i in range(len(b) // 2)
         ]
         byte_text = bytes(bytes_array)
         fd = io.BytesIO(byte_text)
@@ -90,12 +87,17 @@ class TestBlog(TestCase):
 
     def test_ivar(self):
         self.check("hello", "4922 0a68 656c 6c6f 063a 0645 54")
-        self.check(RubyString("hello", {"E": False}), "4922 0a68 656c 6c6f 063a 0645 46")
+        self.check(
+            RubyString("hello", {"E": False}), "4922 0a68 656c 6c6f 063a 0645 46"
+        )
         self.check(
             RubyString("hello", {"encoding": b"Shift_JIS"}),
             "4922 0a68 656c 6c6f 063a 0d65 6e63 6f64 696e 6722 0e53 6869 6674 5f4a 4953",
         )
-        self.check(RubyString("hello", {"E": True, "@test": None}), "4922 0a68 656c 6c6f 073a 0645 543a 0a40 7465 7374 30")
+        self.check(
+            RubyString("hello", {"E": True, "@test": None}),
+            "4922 0a68 656c 6c6f 073a 0645 543a 0a40 7465 7374 30",
+        )
 
     def test_raw_strings(self):
         self.check("hello", "4922 0a68 656c 6c6f 063a 0645 54")
@@ -111,10 +113,7 @@ class TestBlog(TestCase):
         )
 
     def test_class(self):
-        self.check(
-            DemoDomainError,
-            "6316 4d61 7468 3a3a 446f 6d61 696e 4572 726f 72",
-        )
+        self.check(DemoDomainError, "6316 4d61 7468 3a3a 446f 6d61 696e 4572 726f 72")
         self.check(DemoString, "630b 5374 7269 6e67")
 
     def test_modules(self):
@@ -333,32 +332,36 @@ class TestMarshalGemSpec(TestCase):
         self.assertEqual(bytes_value, obj_to_bytes)
 
     def test_time(self):
-        self.double_check(b"\x04\bIu:\tTime\r\xC0\xDB\x1C\xC0\x00\x00\x00\x00\x06:\tzoneI\"\bUTC\x06:\x06EF")
+        self.double_check(
+            b'\x04\bIu:\tTime\r\xC0\xDB\x1C\xC0\x00\x00\x00\x00\x06:\tzoneI"\bUTC\x06:\x06EF'
+        )
 
     def test_subgem_spec(self):
-        raw_src = (b'\x04\x08[\x18I"\n2.2.2\x06:\x06ETi\tI"\x14capistrano-demo\x06;\x00'
-                   b'TU:\x11Gem::Version[\x06I"\n0.0.5\x06;\x00TIu:\tTime\r\xc0\xdb\x1c'
-                   b'\xc0\x00\x00\x00\x00\x06:\tzoneI"\x08UTC\x06;\x00FI"$Create demo-h'
-                   b'ost by branch name\x06;\x00TU:\x15Gem::Requirement[\x06[\x06[\x07I'
-                   b'"\x07>=\x06;\x00TU;\x06[\x06I"\x060\x06;\x00TU;\t[\x06[\x06[\x07I"'
-                   b'\x07>=\x06;\x00TU;\x06[\x06I"\x060\x06;\x00TI"\truby\x06;\x00T[\to'
-                   b':\x14Gem::Dependency\n:\n@nameI"\x0fcapistrano\x06;\x00T:\x11@requ'
-                   b'irementU;\t[\x06[\x06[\x07I"\x07~>\x06;\x00TU;\x06[\x06I"\x083.1'
-                   b'\x06;\x00T:\n@type:\x0cruntime:\x10@prereleaseF:\x1a@version_requi'
-                   b'rementsU;\t[\x06[\x06[\x07I"\x07~>\x06;\x00TU;\x06[\x06I"\x083.1'
-                   b'\x06;\x00To;\n\n;\x0bI"\x0cbundler\x06;\x00T;\x0cU;\t[\x06[\x06['
-                   b'\x07I"\x07~>\x06;\x00TU;\x06[\x06I"\x0b1.10.0\x06;\x00T;\r:\x10dev'
-                   b'elopment;\x0fF;\x10U;\t[\x06[\x06[\x07I"\x07~>\x06;\x00TU;\x06['
-                   b'\x06I"\x0b1.10.0\x06;\x00To;\n\n;\x0bI"\trake\x06;\x00T;\x0cU;\t['
-                   b'\x06[\x06[\x07I"\x07>=\x06;\x00TU;\x06[\x06I"\x060\x06;\x00T;\r;'
-                   b'\x11;\x0fF;\x10U;\t[\x06[\x06[\x07I"\x07>=\x06;\x00TU;\x06[\x06I"'
-                   b'\x060\x06;\x00To;\n\n;\x0bI"\nrspec\x06;\x00T;\x0cU;\t[\x06[\x06['
-                   b'\x07I"\x07~>\x06;\x00TU;\x06[\x06I"\n3.2.0\x06;\x00T;\r;\x11;\x0f'
-                   b'F;\x10U;\t[\x06[\x06[\x07I"\x07~>\x06;\x00TU;\x06[\x06I"\n3.2.0'
-                   b'\x06;\x00T0[\x06I"\x1farthur.shcheglov@gmail.com\x06;\x00T[\x06I"'
-                   b'\x1fArthur Shcheglov (fc_arny)\x06;\x00TI"$Create demo-host by br'
-                   b'anch name\x06;\x00TI"\x1chttp://at-consulting.ru\x06;\x00TT@\x1e['
-                   b'\x06I"\x08MIT\x06;\x00T{\x00')
+        raw_src = (
+            b'\x04\x08[\x18I"\n2.2.2\x06:\x06ETi\tI"\x14capistrano-demo\x06;\x00'
+            b'TU:\x11Gem::Version[\x06I"\n0.0.5\x06;\x00TIu:\tTime\r\xc0\xdb\x1c'
+            b'\xc0\x00\x00\x00\x00\x06:\tzoneI"\x08UTC\x06;\x00FI"$Create demo-h'
+            b"ost by branch name\x06;\x00TU:\x15Gem::Requirement[\x06[\x06[\x07I"
+            b'"\x07>=\x06;\x00TU;\x06[\x06I"\x060\x06;\x00TU;\t[\x06[\x06[\x07I"'
+            b'\x07>=\x06;\x00TU;\x06[\x06I"\x060\x06;\x00TI"\truby\x06;\x00T[\to'
+            b':\x14Gem::Dependency\n:\n@nameI"\x0fcapistrano\x06;\x00T:\x11@requ'
+            b'irementU;\t[\x06[\x06[\x07I"\x07~>\x06;\x00TU;\x06[\x06I"\x083.1'
+            b"\x06;\x00T:\n@type:\x0cruntime:\x10@prereleaseF:\x1a@version_requi"
+            b'rementsU;\t[\x06[\x06[\x07I"\x07~>\x06;\x00TU;\x06[\x06I"\x083.1'
+            b'\x06;\x00To;\n\n;\x0bI"\x0cbundler\x06;\x00T;\x0cU;\t[\x06[\x06['
+            b'\x07I"\x07~>\x06;\x00TU;\x06[\x06I"\x0b1.10.0\x06;\x00T;\r:\x10dev'
+            b'elopment;\x0fF;\x10U;\t[\x06[\x06[\x07I"\x07~>\x06;\x00TU;\x06['
+            b'\x06I"\x0b1.10.0\x06;\x00To;\n\n;\x0bI"\trake\x06;\x00T;\x0cU;\t['
+            b'\x06[\x06[\x07I"\x07>=\x06;\x00TU;\x06[\x06I"\x060\x06;\x00T;\r;'
+            b'\x11;\x0fF;\x10U;\t[\x06[\x06[\x07I"\x07>=\x06;\x00TU;\x06[\x06I"'
+            b'\x060\x06;\x00To;\n\n;\x0bI"\nrspec\x06;\x00T;\x0cU;\t[\x06[\x06['
+            b'\x07I"\x07~>\x06;\x00TU;\x06[\x06I"\n3.2.0\x06;\x00T;\r;\x11;\x0f'
+            b'F;\x10U;\t[\x06[\x06[\x07I"\x07~>\x06;\x00TU;\x06[\x06I"\n3.2.0'
+            b'\x06;\x00T0[\x06I"\x1farthur.shcheglov@gmail.com\x06;\x00T[\x06I"'
+            b'\x1fArthur Shcheglov (fc_arny)\x06;\x00TI"$Create demo-host by br'
+            b'anch name\x06;\x00TI"\x1chttp://at-consulting.ru\x06;\x00TT@\x1e['
+            b'\x06I"\x08MIT\x06;\x00T{\x00'
+        )
         actual_obj = loads(raw_src)
         raw_dst = writes(actual_obj)
         # print(raw_dst)

@@ -2,7 +2,14 @@ import io
 import math
 import re
 
-from rubymarshal.classes import Symbol, UsrMarshal, UserDef, RubyString, Module, RubyObject
+from rubymarshal.classes import (
+    Symbol,
+    UsrMarshal,
+    UserDef,
+    RubyString,
+    Module,
+    RubyObject,
+)
 from rubymarshal.constants import (
     TYPE_BIGNUM,
     TYPE_STRING,
@@ -18,13 +25,13 @@ from rubymarshal.constants import (
     TYPE_SYMLINK,
     TYPE_SYMBOL,
     TYPE_FIXNUM,
-    TYPE_USERDEF, TYPE_CLASS, TYPE_MODULE, TYPE_OBJECT)
-from rubymarshal.constants import TYPE_FLOAT
-from rubymarshal.utils import (
-    write_ushort,
-    write_sbyte,
-    write_ubyte,
+    TYPE_USERDEF,
+    TYPE_CLASS,
+    TYPE_MODULE,
+    TYPE_OBJECT,
 )
+from rubymarshal.constants import TYPE_FLOAT
+from rubymarshal.utils import write_ushort, write_sbyte, write_ubyte
 
 __author__ = "Matthieu Gallet"
 
@@ -179,7 +186,9 @@ class Writer:
             self.write_long(len(obj.ruby_class_name.encode()))
             self.fd.write(obj.ruby_class_name.encode())
         else:
-            raise ValueError("unmarshable object: %s(%r)" % (obj.__class__.__name__, obj))
+            raise ValueError(
+                "unmarshable object: %s(%r)" % (obj.__class__.__name__, obj)
+            )
 
     def write_attributes(self, attributes):
         self.write_long(len(attributes))

@@ -16,7 +16,9 @@ Only basics Ruby data types can be read and written:
 Installation
 ------------
 
+```python3
     pip install rubymarshal
+```
 
 Usage
 -----
@@ -57,7 +59,6 @@ You can use Ruby's symbols:
     dump = writes(Symbol("test"))
     y = loads(dump)
     assert y is x
-
 ```
   
 Infos

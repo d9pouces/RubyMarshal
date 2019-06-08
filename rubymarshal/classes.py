@@ -9,10 +9,7 @@ class RubyObject:
         self.attributes = attributes or {}
 
     def __eq__(self, other):
-        return (
-                isinstance(other, self.__class__)
-                and self.attributes == other.attributes
-        )
+        return isinstance(other, self.__class__) and self.attributes == other.attributes
 
     def __hash__(self):
         return hash(hash(self.__class__.__name__) + hash(repr(self.attributes)))
@@ -86,6 +83,7 @@ class RubyString:
 class UsrMarshal(RubyObject):
     """object with a user-defined serialization format using the marshal_dump and marshal_load instance methods.
      Upon loading a new instance must be allocated and marshal_load must be called on the instance with the data."""
+
     def __init__(self, ruby_class_name, attributes=None):
         self._private_data = None
         super().__init__(ruby_class_name, attributes=attributes)
@@ -104,6 +102,7 @@ class UserDef(RubyObject):
 
     The class method _load is called on the class with a string created from the byte-sequence.
 """
+
     def __init__(self, ruby_class_name, attributes=None):
         self._private_data = None
         super().__init__(ruby_class_name, attributes=attributes)

@@ -7,7 +7,9 @@ from rubymarshal.classes import (
     UserDef,
     Extended,
     Module,
-    RubyString, RubyObject)
+    RubyString,
+    RubyObject,
+)
 from rubymarshal.constants import (
     TYPE_NIL,
     TYPE_TRUE,
@@ -132,7 +134,10 @@ class Reader:
             attr_list = self.read()
             python_class = self.class_mapping.get(class_name, UsrMarshal)
             if not issubclass(python_class, UsrMarshal):
-                raise ValueError("invalid class mapping for %r: %r should be a subclass of %r." % (class_name, python_class, UsrMarshal))
+                raise ValueError(
+                    "invalid class mapping for %r: %r should be a subclass of %r."
+                    % (class_name, python_class, UsrMarshal)
+                )
             result = python_class(class_name, attr_list)
         elif token == TYPE_SYMLINK:
             result = self.read_symlink()
@@ -146,7 +151,10 @@ class Reader:
                 raise ValueError("invalid class name: %r" % class_name)
             python_class = self.class_mapping.get(class_name.name, UserDef)
             if not issubclass(python_class, UserDef):
-                raise ValueError("invalid class mapping for %r: %r should be a subclass of %r." % (class_name, python_class, UserDef))
+                raise ValueError(
+                    "invalid class mapping for %r: %r should be a subclass of %r."
+                    % (class_name, python_class, UserDef)
+                )
             result = python_class(class_name)
             # noinspection PyProtectedMember
             result._load(private_data)
@@ -160,7 +168,10 @@ class Reader:
             class_name = symbol_class_name.name
             python_class = self.class_mapping.get(class_name, RubyObject)
             if not issubclass(python_class, RubyObject):
-                raise ValueError("invalid class mapping for %r: %r should be a subclass of %r." % (class_name, python_class, RubyObject))
+                raise ValueError(
+                    "invalid class mapping for %r: %r should be a subclass of %r."
+                    % (class_name, python_class, RubyObject)
+                )
             attrs = self.read_attributes()
             result = python_class(class_name, attrs)
         elif token == TYPE_EXTENDED:
@@ -172,7 +183,11 @@ class Reader:
             if class_name in self.class_mapping:
                 result = self.class_mapping[class_name]
             else:
-                result = type(class_name.rpartition(":")[2], (RubyObject,), {"ruby_class_name": class_name})
+                result = type(
+                    class_name.rpartition(":")[2],
+                    (RubyObject,),
+                    {"ruby_class_name": class_name},
+                )
         else:
             raise ValueError("token %s is not recognized" % token)
         if object_index is not None:
