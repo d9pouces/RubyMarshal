@@ -341,7 +341,7 @@ class TestMarshalGemSpec(TestCase):
         self.assertEqual(actual_obj, dst_obj)
         # print(dst_obj, actual_obj == dst_obj)
         # loads(raw_dst)
-        # self.assertEqual(raw_src, raw_dst)
+        self.assertEqual(raw_src, raw_dst)
 
     def test_gem_spec(self):
         raw_src = (
