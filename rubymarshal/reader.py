@@ -39,12 +39,11 @@ __author__ = "Matthieu Gallet"
 
 
 class Reader:
-    def __init__(self, fd, usr_marshal_mapping=None, userdef_mapping=None):
+    def __init__(self, fd, class_mapping=None):
         self.symbols = []
         self.objects = []
         self.fd = fd
-        self.usr_marshal_mapping = usr_marshal_mapping or {}
-        self.userdef_mapping = userdef_mapping or {}
+        self.class_mapping = class_mapping or {}
 
     def read(self, token=None):
         if token is None:
@@ -132,8 +131,10 @@ class Reader:
         elif token == TYPE_USRMARSHAL:
             class_name = self.read()
             attr_list = self.read()
-            cls = self.usr_marshal_mapping.get(class_name, UsrMarshal)
-            result = cls(class_name, attr_list)
+            python_class = self.class_mapping.get(class_name, UsrMarshal)
+            if not issubclass(python_class, UsrMarshal):
+                raise ValueError("invalid class mapping for %r: %r should be a subclass of %r." % (class_name, python_class, UsrMarshal))
+            result = python_class(class_name, attr_list)
         elif token == TYPE_SYMLINK:
             result = self.read_symlink()
         elif token == TYPE_LINK:
@@ -144,7 +145,9 @@ class Reader:
             private_data = self.read(TYPE_STRING)
             if not isinstance(class_name, Symbol):
                 raise ValueError("invalid class name: %r" % class_name)
-            python_class = self.userdef_mapping.get(class_name.name, UserDef)
+            python_class = self.class_mapping.get(class_name.name, UserDef)
+            if not issubclass(python_class, UserDef):
+                raise ValueError("invalid class mapping for %r: %r should be a subclass of %r." % (class_name, python_class, UserDef))
             result = python_class(class_name)
             # noinspection PyProtectedMember
             result._load(private_data)
@@ -154,8 +157,11 @@ class Reader:
             result = Module(module_name, None)
         elif token == TYPE_OBJECT:
             class_name = self.read()
+            python_class = self.class_mapping.get(class_name, Object)
+            if not issubclass(python_class, Object):
+                raise ValueError("invalid class mapping for %r: %r should be a subclass of %r." % (class_name, python_class, Object))
             attrs = self.read_attributes()
-            result = Object(class_name, attrs)
+            result = python_class(class_name, attrs)
         elif token == TYPE_EXTENDED:
             class_name = self.read(TYPE_STRING)
             result = Extended(class_name, None)
@@ -169,7 +175,8 @@ class Reader:
             self.objects[object_index - 1] = result
         return result
 
-    def _get_encoding(self, attrs):
+    @staticmethod
+    def _get_encoding(attrs):
         encoding = "latin1"
         if attrs.get("E") is True:
             encoding = "utf-8"

@@ -2,27 +2,24 @@ __author__ = "Matthieu Gallet"
 
 
 class RubyClass:
-    def __init__(self, cls, attributes=None):
-        # if isinstance(cls, Symbol):
-        #     cls = cls.name
-        self.cls = cls
+    def __init__(self, ruby_class_name, attributes=None):
+        self.ruby_class_name = ruby_class_name
         self.attributes = attributes or {}
 
     def __eq__(self, other):
         return (
                 isinstance(other, self.__class__)
-                and self.cls == other.cls
                 and self.attributes == other.attributes
         )
 
     def __hash__(self):
-        return hash(hash(self.cls) + hash(repr(self.attributes)))
+        return hash(hash(self.__class__.__name__) + hash(repr(self.attributes)))
 
     def __repr__(self):
-        return "%s:%s(%r)" % (self.__class__.__name__, self.cls, self.attributes)
+        return "%s(%r)" % (self.__class__.__name__, self.attributes)
 
     def __str__(self):
-        return "%s:%s(%r)" % (self.__class__.__name__, self.cls, self.attributes)
+        return "%s(%r)" % (self.__class__.__name__, self.attributes)
 
 
 class String:
@@ -89,9 +86,9 @@ class Class(RubyClass):
 
 
 class UsrMarshal(RubyClass):
-    def __init__(self, cls, attributes=None):
+    def __init__(self, ruby_class_name, attributes=None):
         self._private_data = None
-        super().__init__(cls, attributes=attributes)
+        super().__init__(ruby_class_name, attributes=attributes)
 
     def marshal_load(self, private_data):
         self._private_data = private_data
@@ -107,9 +104,9 @@ class UserDef(RubyClass):
 
 The class method _load is called on the class with a string created from the byte-sequence.
 """
-    def __init__(self, cls, attributes=None):
+    def __init__(self, ruby_class_name, attributes=None):
         self._private_data = None
-        super().__init__(cls, attributes=attributes)
+        super().__init__(ruby_class_name, attributes=attributes)
 
     def _load(self, private_data: bytes):
         self._private_data = private_data
@@ -118,18 +115,17 @@ The class method _load is called on the class with a string created from the byt
         return self._private_data
 
 
+class Object(RubyClass):
+    def __init__(self, ruby_class_name, attributes):
+        super().__init__(ruby_class_name, attributes)
+
+
 class Extended(RubyClass):
     pass
 
 
 class Module(RubyClass):
     pass
-
-
-class Object(RubyClass):
-    def __init__(self, cls, attributes, **kwargs):
-        self.kwargs = kwargs
-        super().__init__(cls, attributes)
 
 
 class Symbol:

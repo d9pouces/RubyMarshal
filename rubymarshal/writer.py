@@ -141,12 +141,12 @@ class Writer:
             self.write(False)
         elif isinstance(obj, Module):
             self.fd.write(TYPE_MODULE)
-            self.write_long(len(obj.cls.encode()))
-            self.fd.write(obj.cls.encode())
+            self.write_long(len(obj.ruby_class_name.encode()))
+            self.fd.write(obj.ruby_class_name.encode())
         elif isinstance(obj, UsrMarshal):
             if self.must_write(obj):
                 self.fd.write(TYPE_USRMARSHAL)
-                self.write(Symbol(obj.cls))
+                self.write(Symbol(obj.ruby_class_name))
                 obj_attributes = obj.attributes
                 self.write(obj_attributes)
         elif isinstance(obj, UserDef):
@@ -154,13 +154,14 @@ class Writer:
                 if obj.attributes:
                     self.fd.write(TYPE_IVAR)
                 self.fd.write(TYPE_USERDEF)
-                name = obj.cls
+                name = obj.ruby_class_name
                 if isinstance(name, Symbol):
                     self.write(name)
                 else:
                     encoded = name.encode("utf-8")
                     self.write_long(len(encoded))
                     self.fd.write(encoded)
+                # noinspection PyProtectedMember
                 bdata = obj._dump()
                 self.write_long(len(bdata))
                 self.fd.write(bdata)
@@ -169,14 +170,14 @@ class Writer:
         elif isinstance(obj, Object):
             if self.must_write(obj):
                 self.fd.write(TYPE_OBJECT)
-                self.write(obj.cls)
+                self.write(obj.ruby_class_name)
                 if not isinstance(obj.attributes, dict):
                     raise ValueError("%r values is not a dict" % obj)
                 self.write_attributes(obj.attributes)
         elif isinstance(obj, Class):
             self.fd.write(TYPE_CLASS)
-            self.write_long(len(obj.cls.encode()))
-            self.fd.write(obj.cls.encode())
+            self.write_long(len(obj.ruby_class_name.encode()))
+            self.fd.write(obj.ruby_class_name.encode())
         else:
             raise ValueError("unmarshable object: %s(%r)" % (obj.__class__.__name__, obj))
 
