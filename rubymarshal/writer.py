@@ -105,27 +105,28 @@ class Writer:
             self.write(Symbol("E"))
             self.write(True)
         elif isinstance(obj, String):
-            encoding = "utf-8"
-            if Symbol("E") in obj.attrs and not obj.attrs[Symbol("E")]:
-                encoding = "latin-1"
-            elif Symbol("encoding") in obj.attrs:
-                encoding = obj.attrs[Symbol("encoding")]
-            else:
-                obj.attrs[Symbol("E")] = True
-            encoded = obj.encode(encoding)
-            self.fd.write(TYPE_IVAR)
-            self.fd.write(TYPE_STRING)
-            self.write_long(len(encoded))
-            self.fd.write(encoded)
-            self.write_long(len(obj.attrs))
-            for k, v in obj.attrs.items():
-                self.write(k)
-                if k == Symbol("encoding"):
-                    self.fd.write(TYPE_STRING)
-                    self.write_long(len(v.encode()))
-                    self.fd.write(v.encode())
+            if self.must_write(obj):
+                encoding = "utf-8"
+                if Symbol("E") in obj.attrs and not obj.attrs[Symbol("E")]:
+                    encoding = "latin-1"
+                elif Symbol("encoding") in obj.attrs:
+                    encoding = obj.attrs[Symbol("encoding")]
                 else:
-                    self.write(v)
+                    obj.attrs[Symbol("E")] = True
+                encoded = obj.encode(encoding)
+                self.fd.write(TYPE_IVAR)
+                self.fd.write(TYPE_STRING)
+                self.write_long(len(encoded))
+                self.fd.write(encoded)
+                self.write_long(len(obj.attrs))
+                for k, v in obj.attrs.items():
+                    self.write(k)
+                    if k == Symbol("encoding"):
+                        self.fd.write(TYPE_STRING)
+                        self.write_long(len(v.encode()))
+                        self.fd.write(v.encode())
+                    else:
+                        self.write(v)
         elif isinstance(obj, float):
             obj = "%.20g" % obj
             if simple_float_re.match(obj):
@@ -172,14 +173,15 @@ class Writer:
             self.write_long(len(bdata))
             self.fd.write(bdata)
         elif isinstance(obj, Object):
-            self.fd.write(TYPE_OBJECT)
-            self.write(obj.cls)
-            if not isinstance(obj.values, dict):
-                raise ValueError("%r values is not a dict" % obj)
-            self.write_long(len(obj.values))
-            for k, v in obj.values.items():
-                self.write(k)
-                self.write(v)
+            if self.must_write(obj):
+                self.fd.write(TYPE_OBJECT)
+                self.write(obj.cls)
+                if not isinstance(obj.values, dict):
+                    raise ValueError("%r values is not a dict" % obj)
+                self.write_long(len(obj.values))
+                for k, v in obj.values.items():
+                    self.write(k)
+                    self.write(v)
         elif isinstance(obj, Class):
             self.fd.write(TYPE_CLASS)
             self.write_long(len(obj.cls.encode()))

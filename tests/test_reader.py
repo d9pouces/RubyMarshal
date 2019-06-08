@@ -31,7 +31,7 @@ class TestBlog(TestCase):
         self.assertEqual(a, bytes_to_obj)
         # check that there is no data left
         self.assertEqual(b"", fd.read())
-        obj_to_bytes = writes(a)
+        obj_to_bytes = writes(bytes_to_obj)
         self.assertEqual(byte_text, obj_to_bytes)
 
     def test_nil(self):
@@ -337,6 +337,8 @@ class TestMarshalGemSpec(TestCase):
         actual_obj = loads(raw_src)
         raw_dst = writes(actual_obj)
         print(raw_dst)
+        dst_obj = loads(raw_dst)
+        print(dst_obj, actual_obj == dst_obj)
         # loads(raw_dst)
         self.assertEqual(raw_src, raw_dst)
 
