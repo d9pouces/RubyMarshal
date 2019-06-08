@@ -2,7 +2,7 @@ import io
 import math
 import re
 
-from rubymarshal.classes import Symbol, UsrMarshal, UserDef, Object, String, Module, Class
+from rubymarshal.classes import Symbol, UsrMarshal, UserDef, RubyString, Module, RubyObject
 from rubymarshal.constants import (
     TYPE_BIGNUM,
     TYPE_STRING,
@@ -99,7 +99,7 @@ class Writer:
             self.write_long(1)
             self.write(Symbol("E"))
             self.write(True)
-        elif isinstance(obj, String):
+        elif isinstance(obj, RubyString):
             if self.must_write(obj):
                 encoding = "utf-8"
                 attributes = obj.attributes
@@ -167,14 +167,14 @@ class Writer:
                 self.fd.write(bdata)
                 if obj.attributes:
                     self.write_attributes(obj.attributes)
-        elif isinstance(obj, Object):
+        elif isinstance(obj, RubyObject):
             if self.must_write(obj):
                 self.fd.write(TYPE_OBJECT)
-                self.write(obj.ruby_class_name)
+                self.write(Symbol(obj.ruby_class_name))
                 if not isinstance(obj.attributes, dict):
                     raise ValueError("%r values is not a dict" % obj)
                 self.write_attributes(obj.attributes)
-        elif isinstance(obj, Class):
+        elif isinstance(obj, type) and issubclass(obj, RubyObject):
             self.fd.write(TYPE_CLASS)
             self.write_long(len(obj.ruby_class_name.encode()))
             self.fd.write(obj.ruby_class_name.encode())

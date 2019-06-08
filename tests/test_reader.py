@@ -10,11 +10,25 @@ import re
 import unittest
 from unittest.case import TestCase
 
-from rubymarshal.classes import Symbol, UsrMarshal, Module, Object, String, Class
+from rubymarshal.classes import Symbol, UsrMarshal, Module, RubyString, RubyObject
 from rubymarshal.reader import loads, load
 from rubymarshal.writer import writes
 
 __author__ = "Matthieu Gallet"
+
+
+class DemoString(RubyObject):
+    ruby_class_name = "String"
+
+
+class DemoDomainError(RubyObject):
+    ruby_class_name = "Math::DomainError"
+
+
+class_mapping = {
+    "String": DemoString,
+    "Math::DomainError": DemoDomainError
+}
 
 
 class TestBlog(TestCase):
@@ -23,11 +37,11 @@ class TestBlog(TestCase):
     def check(self, a, b):
         b = b.replace(" ", "")
         bytes_array = [4, 8] + [
-            int(b[2 * i : 2 * i + 2], 16) for i in range(len(b) // 2)
+            int(b[2 * i: 2 * i + 2], 16) for i in range(len(b) // 2)
         ]
         byte_text = bytes(bytes_array)
         fd = io.BytesIO(byte_text)
-        bytes_to_obj = load(fd)
+        bytes_to_obj = load(fd, class_mapping=class_mapping)
         self.assertEqual(a, bytes_to_obj)
         # check that there is no data left
         self.assertEqual(b"", fd.read())
@@ -76,12 +90,12 @@ class TestBlog(TestCase):
 
     def test_ivar(self):
         self.check("hello", "4922 0a68 656c 6c6f 063a 0645 54")
-        self.check(String("hello", {"E": False}), "4922 0a68 656c 6c6f 063a 0645 46")
+        self.check(RubyString("hello", {"E": False}), "4922 0a68 656c 6c6f 063a 0645 46")
         self.check(
-            String("hello", {"encoding": b"Shift_JIS"}),
+            RubyString("hello", {"encoding": b"Shift_JIS"}),
             "4922 0a68 656c 6c6f 063a 0d65 6e63 6f64 696e 6722 0e53 6869 6674 5f4a 4953",
         )
-        self.check(String("hello", {"E": True, "@test": None}), "4922 0a68 656c 6c6f 073a 0645 543a 0a40 7465 7374 30")
+        self.check(RubyString("hello", {"E": True, "@test": None}), "4922 0a68 656c 6c6f 073a 0645 543a 0a40 7465 7374 30")
 
     def test_raw_strings(self):
         self.check("hello", "4922 0a68 656c 6c6f 063a 0645 54")
@@ -97,18 +111,18 @@ class TestBlog(TestCase):
         )
 
     def test_class(self):
-        self.check(Class("String", None), "630b 5374 7269 6e67")
         self.check(
-            Class("Math::DomainError", None),
+            DemoDomainError,
             "6316 4d61 7468 3a3a 446f 6d61 696e 4572 726f 72",
         )
+        self.check(DemoString, "630b 5374 7269 6e67")
 
     def test_modules(self):
         self.check(Module("Enumerable", None), "6d0f 456e 756d 6572 6162 6c65")
 
     def test_user_object_instances(self):
         self.check(
-            Object(Symbol("DumpTest"), {"@a": None}),
+            RubyObject("DumpTest", {"@a": None}),
             "6f3a 0d44 756d 7054 6573 7406 3a07 4061 30",
         )
 

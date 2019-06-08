@@ -6,9 +6,8 @@ from rubymarshal.classes import (
     Symbol,
     UserDef,
     Extended,
-    Object,
     Module,
-    String, Class)
+    RubyString, RubyObject)
 from rubymarshal.constants import (
     TYPE_NIL,
     TYPE_TRUE,
@@ -89,7 +88,7 @@ class Reader:
                 result = result.decode(encoding)
             # string instance attributes are discarded
             if attrs and sub_token == TYPE_STRING:
-                result = String(result, attrs)
+                result = RubyString(result, attrs)
             if sub_token == TYPE_REGEXP:
                 result = re.compile(str(result), flags)
             elif attrs:
@@ -156,10 +155,12 @@ class Reader:
             module_name = data.decode()
             result = Module(module_name, None)
         elif token == TYPE_OBJECT:
-            class_name = self.read()
-            python_class = self.class_mapping.get(class_name, Object)
-            if not issubclass(python_class, Object):
-                raise ValueError("invalid class mapping for %r: %r should be a subclass of %r." % (class_name, python_class, Object))
+            symbol_class_name = self.read()
+            assert isinstance(symbol_class_name, Symbol)
+            class_name = symbol_class_name.name
+            python_class = self.class_mapping.get(class_name, RubyObject)
+            if not issubclass(python_class, RubyObject):
+                raise ValueError("invalid class mapping for %r: %r should be a subclass of %r." % (class_name, python_class, RubyObject))
             attrs = self.read_attributes()
             result = python_class(class_name, attrs)
         elif token == TYPE_EXTENDED:
@@ -168,7 +169,10 @@ class Reader:
         elif token == TYPE_CLASS:
             data = self.read(TYPE_STRING)
             class_name = data.decode()
-            result = Class(class_name, None)
+            if class_name in self.class_mapping:
+                result = self.class_mapping[class_name]
+            else:
+                result = type(class_name.rpartition(":")[2], (RubyObject,), {"ruby_class_name": class_name})
         else:
             raise ValueError("token %s is not recognized" % token)
         if object_index is not None:
@@ -240,13 +244,13 @@ class Reader:
         return result
 
 
-def load(fd):
+def load(fd, class_mapping=None):
     assert fd.read(1) == b"\x04"
     assert fd.read(1) == b"\x08"
 
-    loader = Reader(fd)
+    loader = Reader(fd, class_mapping=class_mapping)
     return loader.read()
 
 
-def loads(byte_text):
-    return load(io.BytesIO(byte_text))
+def loads(byte_text, class_mapping=None):
+    return load(io.BytesIO(byte_text), class_mapping=class_mapping)

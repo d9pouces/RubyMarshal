@@ -1,7 +1,9 @@
 __author__ = "Matthieu Gallet"
 
 
-class RubyClass:
+class RubyObject:
+    ruby_class_name = None
+
     def __init__(self, ruby_class_name, attributes=None):
         self.ruby_class_name = ruby_class_name
         self.attributes = attributes or {}
@@ -22,7 +24,7 @@ class RubyClass:
         return "%s(%r)" % (self.__class__.__name__, self.attributes)
 
 
-class String:
+class RubyString:
     def __init__(self, text: str, attrs=None):
         self.text = text
         self.attributes = attrs or {}
@@ -30,7 +32,7 @@ class String:
     def __eq__(self, other):
         if isinstance(other, str):
             return self.text == other
-        elif isinstance(other, String):
+        elif isinstance(other, RubyString):
             return self.text == other.text and self.attributes == other.attributes
         return False
 
@@ -44,12 +46,12 @@ class String:
         return self.text
 
     def __add__(self, other):
-        return String(self.text + str(other), self.attributes)
+        return RubyString(self.text + str(other), self.attributes)
 
     def __ne__(self, other):
         if isinstance(other, str):
             return self.text != other
-        elif isinstance(other, String):
+        elif isinstance(other, RubyString):
             return self.text != other.text or self.attributes != other.attributes
         return False
 
@@ -81,11 +83,9 @@ class String:
         return self.text.encode(*args, **kwargs)
 
 
-class Class(RubyClass):
-    pass
-
-
-class UsrMarshal(RubyClass):
+class UsrMarshal(RubyObject):
+    """object with a user-defined serialization format using the marshal_dump and marshal_load instance methods.
+     Upon loading a new instance must be allocated and marshal_load must be called on the instance with the data."""
     def __init__(self, ruby_class_name, attributes=None):
         self._private_data = None
         super().__init__(ruby_class_name, attributes=attributes)
@@ -97,12 +97,12 @@ class UsrMarshal(RubyClass):
         return self._private_data
 
 
-class UserDef(RubyClass):
+class UserDef(RubyObject):
     """ object with a user-defined serialization format using the _dump instance method and _load class method.
 
     data is a byte sequence containing the user-defined representation of the object.
 
-The class method _load is called on the class with a string created from the byte-sequence.
+    The class method _load is called on the class with a string created from the byte-sequence.
 """
     def __init__(self, ruby_class_name, attributes=None):
         self._private_data = None
@@ -115,16 +115,11 @@ The class method _load is called on the class with a string created from the byt
         return self._private_data
 
 
-class Object(RubyClass):
-    def __init__(self, ruby_class_name, attributes):
-        super().__init__(ruby_class_name, attributes)
-
-
-class Extended(RubyClass):
+class Extended(RubyObject):
     pass
 
 
-class Module(RubyClass):
+class Module(RubyObject):
     pass
 
 
