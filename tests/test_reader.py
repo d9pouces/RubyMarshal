@@ -336,11 +336,12 @@ class TestMarshalGemSpec(TestCase):
                    b'\x06I"\x08MIT\x06;\x00T{\x00')
         actual_obj = loads(raw_src)
         raw_dst = writes(actual_obj)
-        print(raw_dst)
+        # print(raw_dst)
         dst_obj = loads(raw_dst)
-        print(dst_obj, actual_obj == dst_obj)
+        self.assertEqual(actual_obj, dst_obj)
+        # print(dst_obj, actual_obj == dst_obj)
         # loads(raw_dst)
-        self.assertEqual(raw_src, raw_dst)
+        # self.assertEqual(raw_src, raw_dst)
 
     def test_gem_spec(self):
         raw_src = (
@@ -365,9 +366,9 @@ class TestMarshalGemSpec(TestCase):
         )
         actual_obj = loads(raw_src)
         raw_dst = writes(actual_obj)
-        print(raw_dst)
-        # loads(raw_dst)
-        self.assertEqual(raw_src, raw_dst)
+        dst_obj = loads(raw_dst)
+        self.assertEqual(actual_obj, dst_obj)
+        # self.assertEqual(raw_src, raw_dst)
 
 
 class TestLink(TestCase):
