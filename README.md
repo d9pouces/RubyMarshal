@@ -7,7 +7,7 @@ Only basics Ruby data types can be read and written:
   * `float`,
   * `bool`,
   * `int`,
-  * `str` (mapped to `unicode` in Python 2),
+  * `str` (mapped to `rubymarshal.classes.RubyString` if dumped with instance variables),
   * `nil` (mapped to `None` in Python),
   * `array` (mapped to `list`),
   * `hash` (mapped to `dict`),
@@ -21,7 +21,7 @@ Installation
 Usage
 -----
 
-
+```python3
     from rubymarshal.reader import loads, load
     from rubymarshal.writer import writes, write
     with open('my_file', 'rb') as fd:
@@ -30,6 +30,35 @@ Usage
         write(fd, my_object)
     loads(b"\x04\bi\xfe\x00\xff")
     writes(-256)
+```
+
+You can map Ruby types to Python ones:
+
+```python3
+    from rubymarshal.reader import loads
+    from rubymarshal.classes import RubyObject
+
+    class DomainError(RubyObject):
+        ruby_class_name = "Math::DomainError"
+    
+    class_mapping = {"Math::DomainError": DomainError}
+
+    loads(b'\x04\x08c\x16Math::DomainError', class_mapping=class_mapping)
+```
+
+You can use Ruby's symbols:
+
+```python3
+    from rubymarshal.reader import loads
+    from rubymarshal.writer import writes
+    from rubymarshal.classes import Symbol
+    
+    x = Symbol("test")
+    dump = writes(Symbol("test"))
+    y = loads(dump)
+    assert y is x
+
+```
   
 Infos
 -----

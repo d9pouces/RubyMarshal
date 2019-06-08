@@ -24,6 +24,7 @@ setup(
     version=version,
     description="Read and write Ruby-marshalled data.",
     long_description=long_description,
+    long_description_content_type="text/markdown",
     author="Matthieu Gallet",
     author_email="python-dev@19pouces.net",
     license="WTFPL",
