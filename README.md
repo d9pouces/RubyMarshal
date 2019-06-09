@@ -2,7 +2,7 @@ RubyMarshal
 ===========
 
 Read and write Ruby-marshalled data.
-Only basics Ruby data types can be read and written: 
+Only basics Ruby data types can be directly read and written, but you can use any custom Python and Ruby types: 
 
   * `float`,
   * `bool`,
@@ -38,14 +38,31 @@ You can map custom Ruby types to Python ones:
 
 ```python3
     from rubymarshal.reader import loads
-    from rubymarshal.classes import RubyObject
+    from rubymarshal.classes import RubyObject, registry
 
     class DomainError(RubyObject):
         ruby_class_name = "Math::DomainError"
     
-    class_mapping = {"Math::DomainError": DomainError}
+    registry.register(DomainError)
 
-    loads(b'\x04\x08c\x16Math::DomainError', class_mapping=class_mapping)
+    loads(b'\x04\x08c\x16Math::DomainError', registry=registry)
+```
+
+
+You can use custom registries instead of the global one:
+
+
+```python3
+    from rubymarshal.reader import loads
+    from rubymarshal.classes import RubyObject, ClassRegistry
+
+    class DomainError(RubyObject):
+        ruby_class_name = "Math::DomainError"
+    
+    registry = ClassRegistry()
+    registry.register(DomainError)
+
+    loads(b'\x04\x08c\x16Math::DomainError', registry=registry)
 ```
 
 You can use Ruby's symbols:
@@ -62,7 +79,7 @@ You can use Ruby's symbols:
 ```
 
 
-The default Writer class is customizable to write extra Python classes:
+The default Writer class is customizable to write custom Python classes:
 
 ```python3
     from rubymarshal.writer import writes, Writer
@@ -86,6 +103,6 @@ The default Writer class is customizable to write extra Python classes:
 Infos
 -----
 
-Code is on github: https://github.com/d9pouces/RubyMarshal 
-Documentation is on readthedocs: http://rubymarshal.readthedocs.org/en/latest/ 
-Tests are on travis-ci: https://travis-ci.org/d9pouces/RubyMarshal
+  * Code is on github: https://github.com/d9pouces/RubyMarshal 
+  * Documentation is on readthedocs: http://rubymarshal.readthedocs.org/en/latest/ 
+  * Tests are on travis-ci: https://travis-ci.org/d9pouces/RubyMarshal

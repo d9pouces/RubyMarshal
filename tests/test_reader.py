@@ -10,7 +10,14 @@ import re
 import unittest
 from unittest.case import TestCase
 
-from rubymarshal.classes import Symbol, UsrMarshal, Module, RubyString, RubyObject
+from rubymarshal.classes import (
+    Symbol,
+    UsrMarshal,
+    Module,
+    RubyString,
+    RubyObject,
+    ClassRegistry,
+)
 from rubymarshal.reader import loads, load
 from rubymarshal.writer import writes
 
@@ -25,7 +32,9 @@ class DemoDomainError(RubyObject):
     ruby_class_name = "Math::DomainError"
 
 
-class_mapping = {"String": DemoString, "Math::DomainError": DemoDomainError}
+registry = ClassRegistry()
+registry.register(DemoDomainError)
+registry.register(DemoString)
 
 
 class TestBlog(TestCase):
@@ -38,7 +47,7 @@ class TestBlog(TestCase):
         ]
         byte_text = bytes(bytes_array)
         fd = io.BytesIO(byte_text)
-        bytes_to_obj = load(fd, class_mapping=class_mapping)
+        bytes_to_obj = load(fd, registry=registry)
         self.assertEqual(a, bytes_to_obj)
         # check that there is no data left
         self.assertEqual(b"", fd.read())
@@ -306,7 +315,7 @@ class TestRegexp(TestCase):
 
 class TestUsrMarshal(TestCase):
     def test_usr(self):
-        a = UsrMarshal(Symbol("Gem::Version"))
+        a = UsrMarshal("Gem::Version")
         a.marshal_load(["0.1.2"])
         self.assertEqual(loads(b'\x04\bU:\x11Gem::Version[\x06I"\n0.1.2\x06:\x06ET'), a)
 
@@ -425,14 +434,14 @@ class TestLink(TestCase):
         self.assertEqual(result[2][2], 4)
 
     def test_link_usr(self):
-        a = UsrMarshal(Symbol("Gem::Version"))
+        a = UsrMarshal("Gem::Version")
         a.marshal_load(["0.1.2"])
         result = loads(b'\x04\b[\aU:\x11Gem::Version[\x06I"\n0.1.2\x06:\x06ET@\x06')
         self.assertEqual(result, [a, a])
 
     def test_link_usr_base(self):
         a = [1, 2, 3]
-        b = UsrMarshal(Symbol("Gem::Version"))
+        b = UsrMarshal("Gem::Version")
         b.marshal_load(["0.1.2"])
         result = loads(
             b'\x04\b[\b[\a[\bi\x06i\ai\b@\a[\aU:\x11Gem::Version[\x06I"\n0.1.2\x06:\x06ET@\t[\a@\a@\a'

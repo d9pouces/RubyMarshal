@@ -253,11 +253,11 @@ class TestRegexp(TestIdemPotent):
 
 class TestUsrMarshal(TestIdemPotent):
     def test_usr(self):
-        a = UsrMarshal(Symbol("Gem::Version"))
+        a = UsrMarshal("Gem::Version")
         a.marshal_load(["0.1.2"])
         self.read_write(a)
 
 
 class TestSymbol(TestIdemPotent):
     def test_symbol(self):
-        self.read_write(Symbol("test_symbol"))
+        self.read_write("test_symbol")

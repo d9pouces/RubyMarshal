@@ -114,13 +114,7 @@ class Writer:
             if obj.attributes:
                 self.fd.write(TYPE_IVAR)
             self.fd.write(TYPE_USERDEF)
-            name = obj.ruby_class_name
-            if isinstance(name, Symbol):
-                self.write(name)
-            else:
-                encoded = name.encode("utf-8")
-                self.write_long(len(encoded))
-                self.fd.write(encoded)
+            self.write(Symbol(obj.ruby_class_name))
             # noinspection PyProtectedMember
             bdata = obj._dump()
             self.write_long(len(bdata))

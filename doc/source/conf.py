@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """RubyMarshal documentation build configuration file, created by
 sphinx-quickstart on Wed Feb 13 11:51:12 2013.
 

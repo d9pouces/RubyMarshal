@@ -9,6 +9,7 @@ from rubymarshal.classes import (
     Module,
     RubyString,
     RubyObject,
+    registry as global_registry,
 )
 from rubymarshal.constants import (
     TYPE_NIL,
@@ -40,11 +41,11 @@ __author__ = "Matthieu Gallet"
 
 
 class Reader:
-    def __init__(self, fd, class_mapping=None):
+    def __init__(self, fd, registry=None):
         self.symbols = []
         self.objects = []
         self.fd = fd
-        self.class_mapping = class_mapping or {}
+        self.registry = registry or global_registry
 
     def read(self, token=None):
         if token is None:
@@ -132,7 +133,7 @@ class Reader:
         elif token == TYPE_USRMARSHAL:
             class_name = self.read()
             attr_list = self.read()
-            python_class = self.class_mapping.get(class_name, UsrMarshal)
+            python_class = self.registry.get(class_name, UsrMarshal)
             if not issubclass(python_class, UsrMarshal):
                 raise ValueError(
                     "invalid class mapping for %r: %r should be a subclass of %r."
@@ -146,11 +147,12 @@ class Reader:
             link_id = self.read_long()
             result = self.objects[link_id]
         elif token == TYPE_USERDEF:
-            class_name = self.read()
+            class_symbol = self.read()
             private_data = self.read(TYPE_STRING)
-            if not isinstance(class_name, Symbol):
-                raise ValueError("invalid class name: %r" % class_name)
-            python_class = self.class_mapping.get(class_name.name, UserDef)
+            if not isinstance(class_symbol, Symbol):
+                raise ValueError("invalid class name: %r" % class_symbol)
+            class_name = class_symbol.name
+            python_class = self.registry.get(class_name, UserDef)
             if not issubclass(python_class, UserDef):
                 raise ValueError(
                     "invalid class mapping for %r: %r should be a subclass of %r."
@@ -164,10 +166,10 @@ class Reader:
             module_name = data.decode()
             result = Module(module_name, None)
         elif token == TYPE_OBJECT:
-            symbol_class_name = self.read()
-            assert isinstance(symbol_class_name, Symbol)
-            class_name = symbol_class_name.name
-            python_class = self.class_mapping.get(class_name, RubyObject)
+            class_symbol = self.read()
+            assert isinstance(class_symbol, Symbol)
+            class_name = class_symbol.name
+            python_class = self.registry.get(class_name, RubyObject)
             if not issubclass(python_class, RubyObject):
                 raise ValueError(
                     "invalid class mapping for %r: %r should be a subclass of %r."
@@ -181,8 +183,8 @@ class Reader:
         elif token == TYPE_CLASS:
             data = self.read(TYPE_STRING)
             class_name = data.decode()
-            if class_name in self.class_mapping:
-                result = self.class_mapping[class_name]
+            if class_name in self.registry:
+                result = self.registry[class_name]
             else:
                 result = type(
                     class_name.rpartition(":")[2],
@@ -260,13 +262,13 @@ class Reader:
         return result
 
 
-def load(fd, class_mapping=None):
+def load(fd, registry=None):
     assert fd.read(1) == b"\x04"
     assert fd.read(1) == b"\x08"
 
-    loader = Reader(fd, class_mapping=class_mapping)
+    loader = Reader(fd, registry=registry)
     return loader.read()
 
 
-def loads(byte_text, class_mapping=None):
-    return load(io.BytesIO(byte_text), class_mapping=class_mapping)
+def loads(byte_text, registry=None):
+    return load(io.BytesIO(byte_text), registry=registry)

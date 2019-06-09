@@ -1,5 +1,6 @@
-__author__ = "Matthieu Gallet"
+from typing import Type
 
+__author__ = "Matthieu Gallet"
 
 class RubyObject:
     ruby_class_name = None
@@ -146,3 +147,32 @@ class Symbol:
 
     def encode(self, *args, **kwargs):
         return self.name.encode(*args, **kwargs)
+
+
+class ClassRegistry:
+    def __init__(self):
+        self._registry = {}
+
+    def register(self, cls: Type[RubyObject]):
+        assert issubclass(cls, RubyObject)
+        self._registry[cls.ruby_class_name] = cls
+
+    def unregister(self, cls: Type[RubyObject]):
+        assert issubclass(cls, RubyObject)
+        if cls.ruby_class_name in self._registry:
+            del self._registry[cls.ruby_class_name]
+
+    def get(self, ruby_class_name: str, default_cls):
+        return self._registry.get(ruby_class_name, default_cls)
+
+    def __contains__(self, item):
+        return item in self._registry
+
+    def __getitem__(self, item):
+        return self._registry[item]
+
+    def __delitem__(self, key):
+        del self._registry[key]
+
+
+registry = ClassRegistry()
