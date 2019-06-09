@@ -45,7 +45,7 @@ You can map custom Ruby types to Python ones:
     
     registry.register(DomainError)
 
-    loads(b'\x04\x08c\x16Math::DomainError', registry=registry)
+    loads(b'\x04\x08c\x16Math::DomainError')
 ```
 
 
