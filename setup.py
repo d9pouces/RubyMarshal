@@ -4,7 +4,7 @@
 import os.path
 import re
 
-from setuptools import setup, find_packages
+from setuptools import setup
 
 with open(os.path.join(os.path.dirname(__file__), "README.md")) as fd:
     long_description = fd.read()
@@ -23,7 +23,7 @@ setup(
     author_email="github@19pouces.net",
     license="WTFPL",
     url="https://github.com/d9pouces/RubyMarshal",
-    packages=find_packages(),
+    packages=["rubymarshal"],
     include_package_data=True,
     zip_safe=True,
     test_suite="tests",

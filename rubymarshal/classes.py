@@ -22,9 +22,9 @@ class RubyObject:
 
 
 class RubyString:
-    def __init__(self, text: str, attrs=None):
+    def __init__(self, text: str, attributes=None):
         self.text = text
-        self.attributes = attrs or {}
+        self.attributes = attributes or {}
 
     def __eq__(self, other):
         if isinstance(other, str):
@@ -55,16 +55,6 @@ class RubyString:
     def __str__(self):
         return self.text
 
-    def __add__(self, other):
-        return RubyString(self.text + str(other), self.attributes)
-
-    def __ne__(self, other):
-        if isinstance(other, str):
-            return self.text != other
-        elif isinstance(other, RubyString):
-            return self.text != other.text or self.attributes != other.attributes
-        return False
-
     def __lt__(self, other):
         return self.text < other
 
@@ -94,9 +84,9 @@ class UsrMarshal(RubyObject):
     """object with a user-defined serialization format using the marshal_dump and marshal_load instance methods.
      Upon loading a new instance must be allocated and marshal_load must be called on the instance with the data."""
 
-    def __init__(self, ruby_class_name):
+    def __init__(self, ruby_class_name, attributes=None):
         self._private_data = None
-        super().__init__(ruby_class_name, attributes=None)
+        super().__init__(ruby_class_name, attributes=attributes)
 
     def marshal_load(self, private_data):
         self._private_data = private_data
@@ -113,9 +103,9 @@ class UserDef(RubyObject):
     The class method _load is called on the class with a string created from the byte-sequence.
 """
 
-    def __init__(self, ruby_class_name):
+    def __init__(self, ruby_class_name, attributes=None):
         self._private_data = None
-        super().__init__(ruby_class_name, attributes=None)
+        super().__init__(ruby_class_name, attributes=attributes)
 
     def _load(self, private_data: bytes):
         self._private_data = private_data

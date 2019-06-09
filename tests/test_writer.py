@@ -1,7 +1,8 @@
-import re
-from unittest import TestCase
 import io
 import math
+import re
+from unittest import TestCase
+
 from rubymarshal.classes import UsrMarshal, Symbol
 from rubymarshal.reader import loads
 from rubymarshal.writer import Writer, writes
@@ -14,6 +15,25 @@ def long_write(obj):
     writer = Writer(fd)
     writer.write_long(obj)
     return fd.getvalue()
+
+
+class Constant:
+    def __init__(self, name):
+        self.name = name
+
+
+class ConstantWriter(Writer):
+    def write_python_object(self, obj):
+        if isinstance(obj, Constant):
+            return self.write(Symbol(obj.name))
+        super().write_python_object(obj)
+
+
+class CustomWriter(TestCase):
+    def test_write_constant(self):
+        dumped = writes([Constant("test")], cls=ConstantWriter)
+        read_constant = loads(dumped)
+        self.assertEqual([Symbol("test")], read_constant)
 
 
 class TestWriteLong(TestCase):

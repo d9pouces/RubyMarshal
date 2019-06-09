@@ -34,7 +34,7 @@ Usage
     writes(-256)
 ```
 
-You can map Ruby types to Python ones:
+You can map custom Ruby types to Python ones:
 
 ```python3
     from rubymarshal.reader import loads
@@ -60,7 +60,29 @@ You can use Ruby's symbols:
     y = loads(dump)
     assert y is x
 ```
-  
+
+
+The default Writer class is customizable to write extra Python classes:
+
+```python3
+    from rubymarshal.writer import writes, Writer
+    from rubymarshal.classes import Symbol
+    
+    class Constant:
+        def __init__(self, name):
+            self.name = name
+    
+    class ConstantWriter(Writer):
+        def write_python_object(self, obj):
+            if isinstance(obj, Constant):
+                return self.write(Symbol(obj.name))
+            super().write_python_object(obj)
+    
+    dump = writes([Constant("test")], cls=ConstantWriter)
+    print(dump)
+
+```
+
 Infos
 -----
 
