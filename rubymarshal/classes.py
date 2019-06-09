@@ -2,12 +2,16 @@ from typing import Type
 
 __author__ = "Matthieu Gallet"
 
+
 class RubyObject:
     ruby_class_name = None
 
     def __init__(self, ruby_class_name, attributes=None):
         self.ruby_class_name = ruby_class_name
         self.attributes = attributes or {}
+
+    def set_attributes(self, attributes):
+        self.attributes = attributes
 
     def __eq__(self, other):
         return isinstance(other, self.__class__) and self.attributes == other.attributes
@@ -22,10 +26,10 @@ class RubyObject:
         return "%s(%r)" % (self.__class__.__name__, self.attributes)
 
 
-class RubyString:
+class RubyString(RubyObject):
     def __init__(self, text: str, attributes=None):
         self.text = text
-        self.attributes = attributes or {}
+        super().__init__("str", attributes=attributes)
 
     def __eq__(self, other):
         if isinstance(other, str):

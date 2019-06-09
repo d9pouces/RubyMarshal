@@ -85,17 +85,17 @@ class Reader:
                     flags |= re.IGNORECASE
                 if options & 4:
                     flags |= re.MULTILINE
-            attrs = self.read_attributes()
+            attributes = self.read_attributes()
             if sub_token in (TYPE_STRING, TYPE_REGEXP):
-                encoding = self._get_encoding(attrs)
+                encoding = self._get_encoding(attributes)
                 result = result.decode(encoding)
             # string instance attributes are discarded
-            if attrs and sub_token == TYPE_STRING:
-                result = RubyString(result, attrs)
+            if attributes and sub_token == TYPE_STRING:
+                result = RubyString(result, attributes)
             if sub_token == TYPE_REGEXP:
                 result = re.compile(str(result), flags)
-            elif attrs:
-                result.attributes = attrs
+            elif attributes:
+                result.set_attributes(attributes)
         elif token == TYPE_STRING:
             size = self.read_long()
             result = self.fd.read(size)
@@ -175,8 +175,8 @@ class Reader:
                     "invalid class mapping for %r: %r should be a subclass of %r."
                     % (class_name, python_class, RubyObject)
                 )
-            attrs = self.read_attributes()
-            result = python_class(class_name, attrs)
+            attributes = self.read_attributes()
+            result = python_class(class_name, attributes)
         elif token == TYPE_EXTENDED:
             class_name = self.read(TYPE_STRING)
             result = Extended(class_name, None)
