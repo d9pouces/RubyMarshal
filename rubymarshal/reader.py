@@ -138,7 +138,8 @@ class Reader:
                     "invalid class mapping for %r: %r should be a subclass of %r."
                     % (class_name, python_class, UsrMarshal)
                 )
-            result = python_class(class_name, attr_list)
+            result = python_class(class_name)
+            result.marshal_load(attr_list)
         elif token == TYPE_SYMLINK:
             result = self.read_symlink()
         elif token == TYPE_LINK:

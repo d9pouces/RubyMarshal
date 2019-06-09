@@ -306,7 +306,8 @@ class TestRegexp(TestCase):
 
 class TestUsrMarshal(TestCase):
     def test_usr(self):
-        a = UsrMarshal(Symbol("Gem::Version"), ["0.1.2"])
+        a = UsrMarshal(Symbol("Gem::Version"))
+        a.marshal_load(["0.1.2"])
         self.assertEqual(loads(b'\x04\bU:\x11Gem::Version[\x06I"\n0.1.2\x06:\x06ET'), a)
 
 
@@ -335,6 +336,21 @@ class TestMarshalGemSpec(TestCase):
         self.double_check(
             b'\x04\bIu:\tTime\r\xC0\xDB\x1C\xC0\x00\x00\x00\x00\x06:\tzoneI"\bUTC\x06:\x06EF'
         )
+
+    def test_spec(self):
+        raw_src = (
+            b'\x04\x08u:\x17Gem::Specification\x02*\x01\x04\x08[\x18I"\x0c'
+            b'2.5.2.3\x06:\x06ETi\tI"\x06a\x06;\x00TU:\x11Gem::Version['
+            b'\x06I"\n0.2.7\x06;\x00TIu:\tTime\r \xa6\x1d\xc0\x00\x00'
+            b'\x00\x00\x06:\tzoneI"\x08UTC\x06;\x00FI"\x19a gem generator '
+            b'etc.\x06;\x00TU:\x15Gem::Requirement[\x06[\x06[\x07I"\x07>='
+            b'\x06;\x00TU;\x06[\x06I"\x060\x06;\x00TU;\t[\x06[\x06[\x07I"'
+            b'\x07>=\x06;\x00TU;\x06[\x06I"\x060\x06;\x00TI"\truby\x06;'
+            b'\x00T[\x000I"\x13degcat@126.com\x06;\x00T[\x06I"\x0bauthor'
+            b'\x06;\x00T0I"\x1fhttps://github.com/axgle/a\x06;\x00TT@\x1e'
+            b'[\x06I"\x08MIT\x06;\x00T{\x00'
+        )
+        self.double_check(raw_src)
 
     def test_subgem_spec(self):
         raw_src = (
@@ -409,13 +425,15 @@ class TestLink(TestCase):
         self.assertEqual(result[2][2], 4)
 
     def test_link_usr(self):
-        a = UsrMarshal(Symbol("Gem::Version"), ["0.1.2"])
+        a = UsrMarshal(Symbol("Gem::Version"))
+        a.marshal_load(["0.1.2"])
         result = loads(b'\x04\b[\aU:\x11Gem::Version[\x06I"\n0.1.2\x06:\x06ET@\x06')
         self.assertEqual(result, [a, a])
 
     def test_link_usr_base(self):
         a = [1, 2, 3]
-        b = UsrMarshal(Symbol("Gem::Version"), ["0.1.2"])
+        b = UsrMarshal(Symbol("Gem::Version"))
+        b.marshal_load(["0.1.2"])
         result = loads(
             b'\x04\b[\b[\a[\bi\x06i\ai\b@\a[\aU:\x11Gem::Version[\x06I"\n0.1.2\x06:\x06ET@\t[\a@\a@\a'
         )

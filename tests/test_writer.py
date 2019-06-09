@@ -233,7 +233,8 @@ class TestRegexp(TestIdemPotent):
 
 class TestUsrMarshal(TestIdemPotent):
     def test_usr(self):
-        a = UsrMarshal(Symbol("Gem::Version"), ["0.1.2"])
+        a = UsrMarshal(Symbol("Gem::Version"))
+        a.marshal_load(["0.1.2"])
         self.read_write(a)
 
 

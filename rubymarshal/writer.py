@@ -154,7 +154,7 @@ class Writer:
             if self.must_write(obj):
                 self.fd.write(TYPE_USRMARSHAL)
                 self.write(Symbol(obj.ruby_class_name))
-                obj_attributes = obj.attributes
+                obj_attributes = obj.marshal_dump()
                 self.write(obj_attributes)
         elif isinstance(obj, UserDef):
             if self.must_write(obj):

@@ -33,18 +33,6 @@ class RubyString:
             return self.text == other.text and self.attributes == other.attributes
         return False
 
-    def __hash__(self):
-        return hash(self.text)
-
-    def __repr__(self):
-        return repr(self.text)
-
-    def __str__(self):
-        return self.text
-
-    def __add__(self, other):
-        return RubyString(self.text + str(other), self.attributes)
-
     def __ne__(self, other):
         if isinstance(other, str):
             return self.text != other
@@ -52,41 +40,20 @@ class RubyString:
             return self.text != other.text or self.attributes != other.attributes
         return False
 
-    def __lt__(self, other):
-        return self.text < other
+    def __getattr__(self, item):
+        return getattr(self.text, item)
 
-    def __gt__(self, other):
-        return self.text > other
-
-    def __le__(self, other):
-        return self.text > other
-
-    def __ge__(self, other):
-        return self.text >= other
-
-    def __iter__(self):
-        yield from self.text
-
-    def __bool__(self):
-        return bool(self.text)
-
-    def __getitem__(self, item):
-        return self.text[item]
-
-    def __len__(self):
-        return len(self.text)
-
-    def encode(self, *args, **kwargs):
-        return self.text.encode(*args, **kwargs)
+    def __add__(self, other):
+        return RubyString(self.text + str(other), self.attributes)
 
 
 class UsrMarshal(RubyObject):
     """object with a user-defined serialization format using the marshal_dump and marshal_load instance methods.
      Upon loading a new instance must be allocated and marshal_load must be called on the instance with the data."""
 
-    def __init__(self, ruby_class_name, attributes=None):
+    def __init__(self, ruby_class_name):
         self._private_data = None
-        super().__init__(ruby_class_name, attributes=attributes)
+        super().__init__(ruby_class_name, attributes=None)
 
     def marshal_load(self, private_data):
         self._private_data = private_data
@@ -103,9 +70,9 @@ class UserDef(RubyObject):
     The class method _load is called on the class with a string created from the byte-sequence.
 """
 
-    def __init__(self, ruby_class_name, attributes=None):
+    def __init__(self, ruby_class_name):
         self._private_data = None
-        super().__init__(ruby_class_name, attributes=attributes)
+        super().__init__(ruby_class_name, attributes=None)
 
     def _load(self, private_data: bytes):
         self._private_data = private_data
