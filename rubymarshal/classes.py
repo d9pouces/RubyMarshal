@@ -46,6 +46,49 @@ class RubyString:
     def __add__(self, other):
         return RubyString(self.text + str(other), self.attributes)
 
+    def __hash__(self):
+        return hash(self.text)
+
+    def __repr__(self):
+        return repr(self.text)
+
+    def __str__(self):
+        return self.text
+
+    def __add__(self, other):
+        return RubyString(self.text + str(other), self.attributes)
+
+    def __ne__(self, other):
+        if isinstance(other, str):
+            return self.text != other
+        elif isinstance(other, RubyString):
+            return self.text != other.text or self.attributes != other.attributes
+        return False
+
+    def __lt__(self, other):
+        return self.text < other
+
+    def __gt__(self, other):
+        return self.text > other
+
+    def __le__(self, other):
+        return self.text > other
+
+    def __ge__(self, other):
+        return self.text >= other
+
+    def __iter__(self):
+        yield from self.text
+
+    def __bool__(self):
+        return bool(self.text)
+
+    def __getitem__(self, item):
+        return self.text[item]
+
+    def __len__(self):
+        return len(self.text)
+
 
 class UsrMarshal(RubyObject):
     """object with a user-defined serialization format using the marshal_dump and marshal_load instance methods.
