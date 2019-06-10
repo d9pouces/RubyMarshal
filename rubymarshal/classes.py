@@ -6,8 +6,8 @@ __author__ = "Matthieu Gallet"
 class RubyObject:
     ruby_class_name = None
 
-    def __init__(self, ruby_class_name, attributes=None):
-        self.ruby_class_name = ruby_class_name
+    def __init__(self, ruby_class_name=None, attributes=None):
+        self.ruby_class_name = ruby_class_name or self.ruby_class_name
         self.attributes = attributes or {}
 
     def set_attributes(self, attributes):
@@ -89,9 +89,9 @@ class UsrMarshal(RubyObject):
     """object with a user-defined serialization format using the marshal_dump and marshal_load instance methods.
      Upon loading a new instance must be allocated and marshal_load must be called on the instance with the data."""
 
-    def __init__(self, ruby_class_name, attributes=None):
+    def __init__(self, ruby_class_name=None, attributes=None):
         self._private_data = None
-        super().__init__(ruby_class_name, attributes=attributes)
+        super().__init__(ruby_class_name=ruby_class_name, attributes=attributes)
 
     def marshal_load(self, private_data):
         self._private_data = private_data
@@ -108,9 +108,9 @@ class UserDef(RubyObject):
     The class method _load is called on the class with a string created from the byte-sequence.
 """
 
-    def __init__(self, ruby_class_name, attributes=None):
+    def __init__(self, ruby_class_name=None, attributes=None):
         self._private_data = None
-        super().__init__(ruby_class_name, attributes=attributes)
+        super().__init__(ruby_class_name=ruby_class_name, attributes=attributes)
 
     def _load(self, private_data: bytes):
         self._private_data = private_data
