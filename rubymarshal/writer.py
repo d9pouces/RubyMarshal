@@ -124,10 +124,14 @@ class Writer:
 
     def write_usr_marshal(self, obj):
         if self.must_write(obj):
+            if obj.attributes:
+                self.fd.write(TYPE_IVAR)
             self.fd.write(TYPE_USRMARSHAL)
             self.write(Symbol(obj.ruby_class_name))
-            obj_attributes = obj.marshal_dump()
-            self.write(obj_attributes)
+            private_data = obj.marshal_dump()
+            self.write(private_data)
+            if obj.attributes:
+                self.write_attributes(obj.attributes)
 
     def write_module(self, obj):
         self.fd.write(TYPE_MODULE)

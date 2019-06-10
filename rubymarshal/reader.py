@@ -131,7 +131,10 @@ class Reader:
             size = self.read_long()
             result = self.fd.read(size)
         elif token == TYPE_USRMARSHAL:
-            class_name = self.read()
+            class_symbol = self.read()
+            if not isinstance(class_symbol, Symbol):
+                raise ValueError("invalid class name: %r" % class_symbol)
+            class_name = class_symbol.name
             attr_list = self.read()
             python_class = self.registry.get(class_name, UsrMarshal)
             if not issubclass(python_class, UsrMarshal):
