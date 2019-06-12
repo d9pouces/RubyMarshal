@@ -166,7 +166,7 @@ class ClassRegistry:
         if cls.ruby_class_name in self._registry:
             del self._registry[cls.ruby_class_name]
 
-    def get(self, ruby_class_name: str, default_cls):
+    def get(self, ruby_class_name: str, default_cls: Type[RubyObject]):
         return self._registry.get(ruby_class_name, default_cls)
 
     def __contains__(self, item):
