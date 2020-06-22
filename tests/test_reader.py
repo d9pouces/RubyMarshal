@@ -231,7 +231,11 @@ class TestString(TestCase):
         self.assertEqual(
             loads(b'\x04\bI"\r\xFE\xFF\x00a\x00b\x00c\x06:\rencoding"\vUTF-16'), "abc"
         )
-
+        
+    def test_bin(self):
+        self.assertEqual(
+            loads(b'\x04\bI\"\x0E\xFE\xFF\x01\x02\x03abc\xFF\x06:\x06ET'), "\xFE\xFF\x01\x02\x03abc\xFF"
+        )
 
 class TestNil(TestCase):
     def test_nil(self):
@@ -280,7 +284,7 @@ class TestFloat(TestCase):
     def test_num_1_2(self):
         self.assertEqual(loads(b"\x04\bf\b1.2"), 1.2)
 
-    def test_num__1(self):
+    def test_num_neg_1(self):
         self.assertEqual(loads(b"\x04\bf\a-1"), -1.0)
 
     def test_num_1234567890_123456789(self):
@@ -292,9 +296,11 @@ class TestFloat(TestCase):
     def test_num_nan(self):
         self.assertTrue(math.isnan(loads(b"\x04\bf\bnan")))
 
-    def test_num__inf(self):
+    def test_num_neg_inf(self):
         self.assertEqual(loads(b"\x04\bf\t-inf"), float("-inf"))
 
+    def test_2p_floats(self):
+        self.assertEqual(loads(b"\x04\bf\x1C0.010000000000000001\x00\x14{"), float("0.01"))
 
 class TestRegexp(TestCase):
     def test_noflag(self):
@@ -389,11 +395,8 @@ class TestMarshalGemSpec(TestCase):
         )
         actual_obj = loads(raw_src)
         raw_dst = writes(actual_obj)
-        # print(raw_dst)
         dst_obj = loads(raw_dst)
         self.assertEqual(actual_obj, dst_obj)
-        # print(dst_obj, actual_obj == dst_obj)
-        # loads(raw_dst)
         self.assertEqual(raw_src, raw_dst)
 
     def test_gem_spec(self):
@@ -426,12 +429,14 @@ class TestMarshalGemSpec(TestCase):
 
 class TestLink(TestCase):
     def test_link_base(self):
-        a = [1, 2, 3]
-        result = loads(b"\x04\b[\b[\bi\x06i\ai\b@\x06@\x06")
-        self.assertEqual(result, [a, a, a])
-        result[0][2] = 4
-        self.assertEqual(result[1][2], 4)
-        self.assertEqual(result[2][2], 4)
+        b = [1, 2]
+        c = [1, 3]
+        a = [b, [c, [b, 4], c], [b, b]]
+        result = loads(b'\x04\b[\b[\ai\x06i\a[\b[\ai\x06i\b[\a@\x06i\t@\b[\a@\x06@\x06')
+        self.assertEqual(result, a)
+        result[0][1] = 4
+        self.assertEqual(result[1][1][0][1], 4)
+        self.assertEqual(result[2][1][1], 4)
 
     def test_link_usr(self):
         a = UsrMarshal("Gem::Version")

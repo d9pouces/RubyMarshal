@@ -50,6 +50,10 @@ class Reader:
     def read(self, token=None):
         if token is None:
             token = self.fd.read(1)
+
+        # From https://docs.ruby-lang.org/en/2.1.0/marshal_rdoc.html:
+        # The stream contains only one copy of each object for all objects except
+        # true, false, nil, Fixnums and Symbols.
         object_index = None
         if token in (
             TYPE_IVAR,
@@ -68,8 +72,10 @@ class Reader:
         ):
             self.objects.append(None)
             object_index = len(self.objects)
+
+        result = None
         if token == TYPE_NIL:
-            result = None
+            pass
         elif token == TYPE_TRUE:
             result = True
         elif token == TYPE_FALSE:
@@ -88,7 +94,10 @@ class Reader:
             attributes = self.read_attributes()
             if sub_token in (TYPE_STRING, TYPE_REGEXP):
                 encoding = self._get_encoding(attributes)
-                result = result.decode(encoding)
+                try:
+                    result = result.decode(encoding)
+                except UnicodeDecodeError as u:
+                    result = result.decode('unicode-escape')
             # string instance attributes are discarded
             if attributes and sub_token == TYPE_STRING:
                 result = RubyString(result, attributes)
@@ -117,7 +126,9 @@ class Reader:
             result = result
         elif token == TYPE_FLOAT:
             size = self.read_long()
-            result = float(self.fd.read(size).decode("utf-8"))
+            floatn = self.fd.read(size)
+            floatn = floatn.split(b'\0')
+            result = float(floatn[0].decode("utf-8"))
         elif token == TYPE_BIGNUM:
             sign = 1 if self.fd.read(1) == b"+" else -1
             num_elements = self.read_long()
@@ -148,6 +159,11 @@ class Reader:
             result = self.read_symlink()
         elif token == TYPE_LINK:
             link_id = self.read_long()
+            if object_index and link_id >= object_index:
+                raise ValueError(
+                    "invalid link destination: %d should be lower than %d."
+                    % (link_id, object_index)
+                )
             result = self.objects[link_id]
         elif token == TYPE_USERDEF:
             class_symbol = self.read()
