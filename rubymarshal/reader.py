@@ -97,7 +97,7 @@ class Reader:
                 try:
                     result = result.decode(encoding)
                 except UnicodeDecodeError as u:
-                    result = result.decode('unicode-escape')
+                    result = result.decode("unicode-escape")
             # string instance attributes are discarded
             if attributes and sub_token == TYPE_STRING:
                 result = RubyString(result, attributes)
@@ -127,7 +127,7 @@ class Reader:
         elif token == TYPE_FLOAT:
             size = self.read_long()
             floatn = self.fd.read(size)
-            floatn = floatn.split(b'\0')
+            floatn = floatn.split(b"\0")
             result = float(floatn[0].decode("utf-8"))
         elif token == TYPE_BIGNUM:
             sign = 1 if self.fd.read(1) == b"+" else -1

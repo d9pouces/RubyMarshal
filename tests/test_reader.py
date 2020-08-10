@@ -231,11 +231,13 @@ class TestString(TestCase):
         self.assertEqual(
             loads(b'\x04\bI"\r\xFE\xFF\x00a\x00b\x00c\x06:\rencoding"\vUTF-16'), "abc"
         )
-        
+
     def test_bin(self):
         self.assertEqual(
-            loads(b'\x04\bI\"\x0E\xFE\xFF\x01\x02\x03abc\xFF\x06:\x06ET'), "\xFE\xFF\x01\x02\x03abc\xFF"
+            loads(b'\x04\bI"\x0E\xFE\xFF\x01\x02\x03abc\xFF\x06:\x06ET'),
+            "\xFE\xFF\x01\x02\x03abc\xFF",
         )
+
 
 class TestNil(TestCase):
     def test_nil(self):
@@ -300,7 +302,10 @@ class TestFloat(TestCase):
         self.assertEqual(loads(b"\x04\bf\t-inf"), float("-inf"))
 
     def test_2p_floats(self):
-        self.assertEqual(loads(b"\x04\bf\x1C0.010000000000000001\x00\x14{"), float("0.01"))
+        self.assertEqual(
+            loads(b"\x04\bf\x1C0.010000000000000001\x00\x14{"), float("0.01")
+        )
+
 
 class TestRegexp(TestCase):
     def test_noflag(self):
@@ -432,7 +437,7 @@ class TestLink(TestCase):
         b = [1, 2]
         c = [1, 3]
         a = [b, [c, [b, 4], c], [b, b]]
-        result = loads(b'\x04\b[\b[\ai\x06i\a[\b[\ai\x06i\b[\a@\x06i\t@\b[\a@\x06@\x06')
+        result = loads(b"\x04\b[\b[\ai\x06i\a[\b[\ai\x06i\b[\a@\x06i\t@\b[\a@\x06@\x06")
         self.assertEqual(result, a)
         result[0][1] = 4
         self.assertEqual(result[1][1][0][1], 4)
