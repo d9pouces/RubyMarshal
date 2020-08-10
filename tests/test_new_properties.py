@@ -1,17 +1,18 @@
-from rubymarshal.classes import RubyObject, RubyString, Symbol
-from rubymarshal.writer import Writer
-from rubymarshal.reader import Reader
-from rubymarshal.constants import TYPE_SYMBOL, TYPE_SYMLINK
-
-from hypothesis import strategies as st, given, assume
-from unittest import TestCase
 import io
+from unittest import TestCase
 
-TEXT = st.text(alphabet=st.characters(whitelist_categories='L'))
+# noinspection PyPackageRequirements
+from hypothesis import strategies as st, given, assume
+
+from rubymarshal.classes import RubyObject, RubyString, Symbol
+from rubymarshal.reader import Reader
+from rubymarshal.writer import Writer
+
+TEXT = st.text(alphabet=st.characters(whitelist_categories="L"))
 ATTRIBUTES = st.one_of(st.integers(), st.floats(), TEXT)
 
-# RubyObject
 
+# RubyObject
 class TestRubyObject(TestCase):
     @given(TEXT, ATTRIBUTES)
     def test_rubyobject_repr(self, name, attributes):
@@ -31,8 +32,8 @@ class TestRubyObject(TestCase):
         self.assertNotEqual(hash(obj1), hash(obj2))
         self.assertEqual(hash(obj1), hash(obj3))
 
-# RubyString
 
+# RubyString
 class TestRubyString(TestCase):
     @given(TEXT, TEXT)
     def test_rubystring_add(self, t1, t2):
@@ -65,7 +66,7 @@ class TestRubyString(TestCase):
         self.assertEqual(len(rstring), len(text))
         it = iter(rstring)
         for i in text:
-            i == next(it)
+            self.assertEqual(i, next(it))
 
     @given(TEXT)
     def test_rubystring_bool(self, text):
@@ -84,8 +85,8 @@ class TestRubyString(TestCase):
         rstring = RubyString(text)
         self.assertEqual(hash(rstring), hash(text))
 
-# Writer
 
+# Writer
 class TestBasicWriter(TestCase):
     @given(TEXT)
     def test_writer_write_python_object(self, fd):
@@ -93,8 +94,8 @@ class TestBasicWriter(TestCase):
         with self.assertRaises(ValueError):
             writer.write_python_object(None)
 
-# Reader
 
+# Reader
 class TestReadSymbol(TestCase):
     def test_reader_read_symbol(self):
         fd = io.BytesIO(b"\x04\b:\x10test_symbol")
