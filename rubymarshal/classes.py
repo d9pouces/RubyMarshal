@@ -67,7 +67,7 @@ class RubyString(RubyObject):
         return self.text > other
 
     def __le__(self, other):
-        return self.text > other
+        return self.text <= other
 
     def __ge__(self, other):
         return self.text >= other
