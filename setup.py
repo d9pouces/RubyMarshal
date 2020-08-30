@@ -26,7 +26,7 @@ setup(
     packages=["rubymarshal"],
     include_package_data=True,
     zip_safe=True,
-    test_suite="tests",
+    test_suite="rubymarshal_tests",
     install_requires=[],
     setup_requires=[],
     classifiers=[
