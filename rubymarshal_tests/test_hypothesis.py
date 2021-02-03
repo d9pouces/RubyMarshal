@@ -1,11 +1,12 @@
+import math
 from unittest import TestCase
 
 # noinspection PyPackageRequirements
 from hypothesis import given
 
 # noinspection PyPackageRequirements
-from hypothesis.strategies import integers, lists, booleans, floats, dictionaries, text
-import math
+from hypothesis.strategies import booleans, dictionaries, floats, integers, lists, text
+
 from rubymarshal.reader import loads
 from rubymarshal.writer import writes
 

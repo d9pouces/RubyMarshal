@@ -2,40 +2,40 @@ import io
 import re
 
 from rubymarshal.classes import (
-    UsrMarshal,
-    Symbol,
-    UserDef,
     Extended,
     Module,
-    RubyString,
     RubyObject,
-    registry as global_registry,
+    RubyString,
+    Symbol,
+    UserDef,
+    UsrMarshal,
 )
+from rubymarshal.classes import registry as global_registry
 from rubymarshal.constants import (
-    TYPE_NIL,
-    TYPE_TRUE,
+    TYPE_ARRAY,
+    TYPE_BIGNUM,
+    TYPE_CLASS,
+    TYPE_DATA,
+    TYPE_EXTENDED,
     TYPE_FALSE,
     TYPE_FIXNUM,
-    TYPE_IVAR,
-    TYPE_STRING,
-    TYPE_SYMBOL,
-    TYPE_ARRAY,
-    TYPE_HASH,
     TYPE_FLOAT,
-    TYPE_BIGNUM,
-    TYPE_REGEXP,
-    TYPE_USRMARSHAL,
-    TYPE_SYMLINK,
+    TYPE_HASH,
+    TYPE_IVAR,
     TYPE_LINK,
-    TYPE_DATA,
-    TYPE_OBJECT,
-    TYPE_STRUCT,
     TYPE_MODULE,
-    TYPE_CLASS,
+    TYPE_NIL,
+    TYPE_OBJECT,
+    TYPE_REGEXP,
+    TYPE_STRING,
+    TYPE_STRUCT,
+    TYPE_SYMBOL,
+    TYPE_SYMLINK,
+    TYPE_TRUE,
     TYPE_USERDEF,
-    TYPE_EXTENDED,
+    TYPE_USRMARSHAL,
 )
-from rubymarshal.utils import read_ushort, read_sbyte, read_ubyte
+from rubymarshal.utils import read_sbyte, read_ubyte, read_ushort
 
 __author__ = "Matthieu Gallet"
 
@@ -96,7 +96,7 @@ class Reader:
                 encoding = self._get_encoding(attributes)
                 try:
                     result = result.decode(encoding)
-                except UnicodeDecodeError as u:
+                except UnicodeDecodeError:
                     result = result.decode("unicode-escape")
             # string instance attributes are discarded
             if attributes and sub_token == TYPE_STRING:

@@ -1,12 +1,13 @@
-from unittest import TestCase
 import io
+from unittest import TestCase
+
 from rubymarshal.utils import (
-    write_ubyte,
-    write_sbyte,
-    write_ushort,
-    read_ushort,
     read_sbyte,
     read_ubyte,
+    read_ushort,
+    write_sbyte,
+    write_ubyte,
+    write_ushort,
 )
 
 __author__ = "Matthieu Gallet"

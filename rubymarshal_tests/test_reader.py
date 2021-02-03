@@ -11,14 +11,14 @@ import unittest
 from unittest.case import TestCase
 
 from rubymarshal.classes import (
+    ClassRegistry,
+    Module,
+    RubyObject,
+    RubyString,
     Symbol,
     UsrMarshal,
-    Module,
-    RubyString,
-    RubyObject,
-    ClassRegistry,
 )
-from rubymarshal.reader import loads, load
+from rubymarshal.reader import load, loads
 from rubymarshal.writer import writes
 
 __author__ = "Matthieu Gallet"

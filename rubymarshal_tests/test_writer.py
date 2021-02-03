@@ -3,7 +3,7 @@ import math
 import re
 from unittest import TestCase
 
-from rubymarshal.classes import UsrMarshal, Symbol
+from rubymarshal.classes import Symbol, UsrMarshal
 from rubymarshal.reader import loads
 from rubymarshal.writer import Writer, writes
 

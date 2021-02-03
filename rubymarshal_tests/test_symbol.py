@@ -1,4 +1,5 @@
 from unittest import TestCase
+
 from rubymarshal.classes import Symbol
 
 __author__ = "Matthieu Gallet"

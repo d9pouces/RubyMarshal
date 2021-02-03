@@ -87,7 +87,7 @@ class RubyString(RubyObject):
 
 class UsrMarshal(RubyObject):
     """object with a user-defined serialization format using the marshal_dump and marshal_load instance methods.
-     Upon loading a new instance must be allocated and marshal_load must be called on the instance with the data."""
+    Upon loading a new instance must be allocated and marshal_load must be called on the instance with the data."""
 
     def __init__(self, ruby_class_name=None, attributes=None):
         self._private_data = None
@@ -101,12 +101,11 @@ class UsrMarshal(RubyObject):
 
 
 class UserDef(RubyObject):
-    """ object with a user-defined serialization format using the _dump instance method and _load class method.
+    """object with a user-defined serialization format using the _dump instance method and _load class method.
 
     data is a byte sequence containing the user-defined representation of the object.
 
-    The class method _load is called on the class with a string created from the byte-sequence.
-"""
+    The class method _load is called on the class with a string created from the byte-sequence."""
 
     def __init__(self, ruby_class_name=None, attributes=None):
         self._private_data = None

@@ -1,11 +1,13 @@
-from rubymarshal.classes import RubyObject, RubyString, Symbol
-from rubymarshal.writer import Writer
-from rubymarshal.reader import Reader
-from rubymarshal.constants import TYPE_SYMBOL, TYPE_SYMLINK
-
-from hypothesis import strategies as st, given, assume
-import pytest
 import io
+
+import pytest
+from hypothesis import assume, given
+from hypothesis import strategies as st
+
+from rubymarshal.classes import RubyObject, RubyString, Symbol
+from rubymarshal.constants import TYPE_SYMBOL, TYPE_SYMLINK
+from rubymarshal.reader import Reader
+from rubymarshal.writer import Writer
 
 TEXT = st.text(alphabet=st.characters(whitelist_categories="L"))
 ATTRIBUTES = st.one_of(st.integers(), st.floats(), TEXT)

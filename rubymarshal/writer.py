@@ -3,35 +3,35 @@ import math
 import re
 
 from rubymarshal.classes import (
-    Symbol,
-    UsrMarshal,
-    UserDef,
-    RubyString,
     Module,
     RubyObject,
+    RubyString,
+    Symbol,
+    UserDef,
+    UsrMarshal,
 )
 from rubymarshal.constants import (
-    TYPE_BIGNUM,
-    TYPE_STRING,
-    TYPE_REGEXP,
     TYPE_ARRAY,
-    TYPE_HASH,
-    TYPE_USRMARSHAL,
-    TYPE_NIL,
-    TYPE_TRUE,
+    TYPE_BIGNUM,
+    TYPE_CLASS,
     TYPE_FALSE,
+    TYPE_FIXNUM,
+    TYPE_FLOAT,
+    TYPE_HASH,
     TYPE_IVAR,
     TYPE_LINK,
-    TYPE_SYMLINK,
-    TYPE_SYMBOL,
-    TYPE_FIXNUM,
-    TYPE_USERDEF,
-    TYPE_CLASS,
     TYPE_MODULE,
+    TYPE_NIL,
     TYPE_OBJECT,
+    TYPE_REGEXP,
+    TYPE_STRING,
+    TYPE_SYMBOL,
+    TYPE_SYMLINK,
+    TYPE_TRUE,
+    TYPE_USERDEF,
+    TYPE_USRMARSHAL,
 )
-from rubymarshal.constants import TYPE_FLOAT
-from rubymarshal.utils import write_ushort, write_sbyte, write_ubyte
+from rubymarshal.utils import write_sbyte, write_ubyte, write_ushort
 
 __author__ = "Matthieu Gallet"
 
