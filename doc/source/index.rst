@@ -1,8 +1,3 @@
-.. RubyMarshal documentation master file, created by
-   sphinx-quickstart on Wed Feb 13 11:51:12 2013.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 RubyMarshal's documentation
 ===========================
 
@@ -12,13 +7,13 @@ overview
 Read and write Ruby-marshalled data.
 Only basics Ruby data types can be read and written:
 
-  * `float`,
-  * `bool`,
-  * `int`,
-  * `str` (mapped to `unicode` in Python 2),
-  * `nil` (mapped to `None` in Python),
-  * `array` (mapped to `list`),
-  * `hash` (mapped to `dict`),
+  * ``float``,
+  * ``bool``,
+  * ``int``,
+  * ``str``,
+  * ``nil`` (mapped to ``None`` in Python),
+  * ``array`` (mapped to ``list``),
+  * ``hash`` (mapped to ``dict``),
   * symbols and other classes are mapped to specific Python classes.
 
 .. code-block:: python

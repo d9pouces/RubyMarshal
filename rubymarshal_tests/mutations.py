@@ -1,3 +1,4 @@
+"""Mutations for RubyMarshal."""
 import pytest_mutagen as mg
 
 from rubymarshal.classes import RubyObject, RubyString
@@ -28,7 +29,7 @@ mg.trivial_mutations(function_list, RubyString)
 
 # utils.py
 
-""" Nothing interesting found """
+# Nothing interesting found """
 
 # writer.py
 

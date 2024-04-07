@@ -5,7 +5,6 @@ from hypothesis import assume, given
 from hypothesis import strategies as st
 
 from rubymarshal.classes import RubyObject, RubyString, Symbol
-from rubymarshal.constants import TYPE_SYMBOL, TYPE_SYMLINK
 from rubymarshal.reader import Reader
 from rubymarshal.writer import Writer
 

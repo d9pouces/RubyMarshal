@@ -238,7 +238,6 @@ class TestFloat(TestIdemPotent):
 
 class TestRegexp(TestIdemPotent):
     def test_noflag(self):
-
         self.assertEqual(b"\x04\bI/\att\x00\x06:\x06EF", writes(re.compile("tt")))
         self.assertEqual(
             b"\x04\bI/\att\x01\x06:\x06EF", writes(re.compile("tt", re.IGNORECASE))

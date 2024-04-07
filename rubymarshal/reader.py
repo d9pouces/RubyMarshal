@@ -136,7 +136,7 @@ class Reader:
             factor = 1
             for x in range(num_elements):
                 result += self.read_short() * factor
-                factor *= 2 ** 16
+                factor *= 2**16
             result *= sign
         elif token == TYPE_REGEXP:
             size = self.read_long()

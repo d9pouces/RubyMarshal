@@ -127,7 +127,6 @@ class Module(RubyObject):
 
 
 class Symbol:
-
     __registered_symbols__ = {}
 
     def __new__(cls, name):

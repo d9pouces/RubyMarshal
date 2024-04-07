@@ -258,7 +258,7 @@ class Writer:
             if size > 5:
                 raise ValueError("%d too long for serialization" % obj)
             original_obj = obj
-            factor = 256 ** size
+            factor = 256**size
             if obj < 0 and obj == -factor:
                 size -= 1
                 obj += factor / 256

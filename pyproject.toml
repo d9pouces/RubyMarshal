@@ -1,0 +1,37 @@
+[build-system]
+build-backend = "poetry.core.masonry.api"
+requires = ["poetry-core"]
+
+[tool.poetry]
+authors = ["Matthieu Gallet <github@19pouces.net>"]
+classifiers = [
+  'Development Status :: 5 - Production/Stable',
+  'Intended Audience :: System Administrators',
+  'License :: OSI Approved',
+  'Topic :: Utilities',
+  'Programming Language :: Python :: 3',
+  'Programming Language :: Python :: 3 :: Only',
+  'Programming Language :: Python :: 3.6',
+  'Programming Language :: Python :: 3.7',
+  'Programming Language :: Python :: 3.8',
+  'Programming Language :: Python :: 3.9',
+  'Programming Language :: Python :: 3.10',
+  'Programming Language :: Python :: 3.11',
+  'Programming Language :: Python :: 3.12'
+]
+description = "Read and write Ruby-marshalled data"
+documentation = 'https://github.com/d9pouces/RubyMarshal'
+license = "WTFPL"
+maintainers = ["Matthieu Gallet <github@19pouces.net>"]
+name = "rubymarshal"
+packages = [{include = "rubymarshal"}]
+readme = "README.md"
+repository = 'https://github.com/interdiode/interdiode-logo'
+version = "0.9.1"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+
+[tool.poetry.group.dev.dependencies]
+hypothesis = "^6.100.0"
+pytest = "^8.1.1"

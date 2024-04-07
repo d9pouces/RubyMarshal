@@ -1,7 +1,5 @@
-black
-flake8
 hypothesis>=5.24.0
-isort
 nose>=1.3.7
-pytest-mutagen
+poetry
+pytest
 wheel

@@ -38,7 +38,7 @@ registry.register(DemoString)
 
 
 class TestBlog(TestCase):
-    """ http://jakegoulding.com/blog/2013/01/15/a-little-dip-into-rubys-marshal-format/ """
+    """http://jakegoulding.com/blog/2013/01/15/a-little-dip-into-rubys-marshal-format/"""
 
     def check(self, a, b):
         b = b.replace(" ", "")
@@ -86,13 +86,13 @@ class TestBlog(TestCase):
     def test_large_integers(self):
         self.check(123, "6901 7b")
         self.check(256, "6902 0001")
-        self.check(2 ** 30 - 1, "6904 ffff ff3f")
+        self.check(2**30 - 1, "6904 ffff ff3f")
 
     def test_negative_integers(self):
         self.check(-1, "69fa")
         self.check(-124, "69ff 84")
         self.check(-257, " 69fe fffe")
-        self.check(-(2 ** 30), "69fc 0000 00c0")
+        self.check(-(2**30), "69fc 0000 00c0")
 
     def test_ivar(self):
         self.check("hello", "4922 0a68 656c 6c6f 063a 0645 54")
