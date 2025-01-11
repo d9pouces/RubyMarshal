@@ -36,3 +36,4 @@ python = "^3.8"
 [tool.poetry.group.dev.dependencies]
 hypothesis = "^6.100.0"
 pytest = "^8.1.1"
+tox = "^4.23.2"
