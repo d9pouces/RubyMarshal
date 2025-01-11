@@ -36,10 +36,6 @@ repos:
   hooks:
   - id: commitizen
     args: []
-- repo: https://github.com/shellcheck-py/shellcheck-py
-  rev: v0.9.0.6
-  hooks:
-  - id: shellcheck
 - repo: https://github.com/d9pouces/mybestpractices
   rev: 0.3.8
   hooks:
