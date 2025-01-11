@@ -282,8 +282,10 @@ class Reader:
 
 
 def load(fd, registry=None):
-    assert fd.read(1) == b"\x04"
-    assert fd.read(1) == b"\x08"
+    if fd.read(1) != b"\x04":
+        raise ValueError(r'Expected token \x04')
+    if fd.read(1) != b"\x08":
+        raise ValueError(r'Expected token \x08')
 
     loader = Reader(fd, registry=registry)
     return loader.read()
