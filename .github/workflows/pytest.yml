@@ -1,0 +1,22 @@
+name: Basic unittests
+on:
+  push:
+    branches:
+    - master
+    - dev
+jobs:
+  unittests:
+    name: Python ${{ matrix.python-version }}
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12', '3.13']
+    env:
+      POETRY_VIRTUALENVS_CREATE: false
+    steps:
+    - uses: actions/checkout@v4.2.2
+    - uses: actions/setup-python@v5.3.0
+      with:
+        python-version: ${{ matrix.python-version }}
+    - run: python3 -m pip install --user hypothesis pytest
+    - run: python3 -m pytest rubymarshal_tests
