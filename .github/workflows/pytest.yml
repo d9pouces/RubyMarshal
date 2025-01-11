@@ -19,4 +19,4 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
     - run: python3 -m pip install --user hypothesis pytest
-    - run: python3 -m pytest rubymarshal_tests
+    - run: python3 -m pytest rubymarshal/tests
