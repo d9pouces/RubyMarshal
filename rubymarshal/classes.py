@@ -1,3 +1,4 @@
+import typing
 from typing import Type
 
 __author__ = "Matthieu Gallet"
@@ -17,7 +18,11 @@ class RubyObject:
         return isinstance(other, self.__class__) and self.attributes == other.attributes
 
     def __hash__(self):
-        return hash(hash(self.__class__.__name__) + hash(repr(self.attributes)))
+        if isinstance(self.attributes, typing.Hashable):
+            hashed = hash(self.attributes)
+        else:
+            hashed = hash(repr(self.attributes))
+        return hash(f"{self.ruby_class_name} {hashed}")
 
     def __repr__(self):
         return "%s(%r)" % (self.__class__.__name__, self.attributes)
