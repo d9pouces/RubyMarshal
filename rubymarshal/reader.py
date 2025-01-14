@@ -15,7 +15,7 @@ from rubymarshal.constants import (
     TYPE_ARRAY,
     TYPE_BIGNUM,
     TYPE_CLASS,
-    TYPE_DATA,
+    # TYPE_DATA,
     TYPE_EXTENDED,
     TYPE_FALSE,
     TYPE_FIXNUM,
@@ -28,7 +28,7 @@ from rubymarshal.constants import (
     TYPE_OBJECT,
     TYPE_REGEXP,
     TYPE_STRING,
-    TYPE_STRUCT,
+    # TYPE_STRUCT,
     TYPE_SYMBOL,
     TYPE_SYMLINK,
     TYPE_TRUE,
@@ -54,22 +54,15 @@ class Reader:
         # From https://docs.ruby-lang.org/en/2.1.0/marshal_rdoc.html:
         # The stream contains only one copy of each object for all objects except
         # true, false, nil, Fixnums and Symbols.
-        object_index = None
         if token in (
-            TYPE_IVAR,
-            # TYPE_EXTENDED, TYPE_UCLASS, ????
-            TYPE_CLASS,
-            TYPE_MODULE,
-            TYPE_FLOAT,
-            TYPE_BIGNUM,
-            TYPE_REGEXP,
-            TYPE_ARRAY,
-            TYPE_HASH,
-            TYPE_STRUCT,
-            TYPE_OBJECT,
-            TYPE_DATA,
-            TYPE_USRMARSHAL,
+            TYPE_TRUE,
+            TYPE_FALSE,
+            TYPE_NIL,
+            TYPE_FIXNUM,
+            TYPE_SYMBOL,
         ):
+            object_index = None
+        else:
             self.objects.append(None)
             object_index = len(self.objects)
 
@@ -283,9 +276,9 @@ class Reader:
 
 def load(fd, registry=None):
     if fd.read(1) != b"\x04":
-        raise ValueError(r'Expected token \x04')
+        raise ValueError(r"Expected token \x04")
     if fd.read(1) != b"\x08":
-        raise ValueError(r'Expected token \x08')
+        raise ValueError(r"Expected token \x08")
 
     loader = Reader(fd, registry=registry)
     return loader.read()
