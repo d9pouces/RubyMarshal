@@ -4,6 +4,7 @@ Sample test module corresponding to the :mod:`rubymarshal.sample` module.
 A complete documentation can be found at :mod:`unittest`.
 
 """
+
 import io
 import math
 import re
@@ -17,6 +18,7 @@ from rubymarshal.classes import (
     RubyString,
     Symbol,
     UsrMarshal,
+    UserDef,
 )
 from rubymarshal.reader import load, loads
 from rubymarshal.writer import writes
@@ -373,6 +375,34 @@ class TestMarshalGemSpec(TestCase):
         self.double_check(raw_src)
 
     def test_subgem_spec(self):
+        # Ruby output:
+        # [
+        #   "2.2.2",
+        #   4,
+        #   "capistrano-demo",
+        #   Gem::Version.new("0.0.5"),
+        #   2015-07-30 00:00:00 UTC,
+        #   "Create demo-host by branch name",
+        #   Gem::Requirement.new([">= 0"]),
+        #   Gem::Requirement.new([">= 0"]),
+        #   "ruby",
+        #   [
+        #     Gem::Dependency.new("capistrano", Gem::Requirement.new(["~> 3.1"]), :runtime),
+        #     Gem::Dependency.new("bundler", Gem::Requirement.new(["~> 1.10.0"]), :development),
+        #     Gem::Dependency.new("rake", Gem::Requirement.new([">= 0"]), :development),
+        #     Gem::Dependency.new("rspec", Gem::Requirement.new(["~> 3.2.0"]), :development)
+        #   ],
+        #   nil,
+        #   ["arthur.shcheglov@gmail.com"],
+        #   ["Arthur Shcheglov (fc_arny)"],
+        #   "Create demo-host by branch name",
+        #   "http://at-consulting.ru",
+        #   true,
+        #   "ruby",
+        #   ["MIT"],
+        #   {}
+        # ]
+
         raw_src = (
             b'\x04\x08[\x18I"\n2.2.2\x06:\x06ETi\tI"\x14capistrano-demo\x06;\x00'
             b'TU:\x11Gem::Version[\x06I"\n0.0.5\x06;\x00TIu:\tTime\r\xc0\xdb\x1c'
@@ -401,6 +431,10 @@ class TestMarshalGemSpec(TestCase):
         actual_obj = loads(raw_src)
         raw_dst = writes(actual_obj)
         dst_obj = loads(raw_dst)
+        self.assertEqual(len(actual_obj), 19)
+        self.assertEqual(actual_obj[16], "ruby")
+        self.assertEqual(actual_obj[17], ["MIT"])
+        self.assertEqual(actual_obj[18], {})
         self.assertEqual(actual_obj, dst_obj)
         self.assertEqual(raw_src, raw_dst)
 
@@ -457,6 +491,70 @@ class TestLink(TestCase):
             b'\x04\b[\b[\a[\bi\x06i\ai\b@\a[\aU:\x11Gem::Version[\x06I"\n0.1.2\x06:\x06ET@\t[\a@\a@\a'
         )
         self.assertEqual(result, [[a, a], [b, b], [a, a]])
+
+    def test_double_raw_hello(self):
+        result = loads(b'\004\b[\a"\nhello@\006')
+        self.assertEqual(result, [b"hello", b"hello"])
+
+    def test_pre_ruby_1_9_input(self):
+        # Ruby output:
+        # [
+        #   "1.3.7",
+        #   3,
+        #   "a",
+        #   Gem::Version.new("0.1.0"),
+        #   2010-05-27 18:00:00 +0200,
+        #   "Summary",
+        #   Gem::Requirement.new([">= 0"]),
+        #   Gem::Requirement.new([">= 0"]),
+        #   "ruby",
+        #   [],
+        #   nil,
+        #   " Email",
+        #   [" Author"],
+        #   "",
+        #   "http://google.com",
+        #   true,
+        #   "ruby",
+        #   []
+        #  ]
+
+        version = UsrMarshal("Gem::Version")
+        version.marshal_load(["0.1.0"])
+        requirement = UsrMarshal("Gem::Requirement")
+        date = UserDef("Date", {"@marshal_with_utc_coercion": False})
+        requirement.marshal_load([[">= 0"]])
+        raw_src = (
+            b'\x04\x08[\x17"\n1.3.7i\x08"\x06aU:\x11Gem::Version[\x06"\n0.1.0Iu:\tTime\rp\x93\x1b'
+            b'\x80\x00\x00\x00\x00\x06:\x1f@marshal_with_utc_coercionF"\x0cSummaryU:\x15'
+            b'Gem::Requirement[\x06[\x06[\x07"\x07>=U;\x00[\x06"\x060U;\x08[\x06[\x06[\x07"\x07>=U;'
+            b'\x00[\x06"\x060"\truby[\x000"\x0b Email[\x06"\x0c Author"\x00"\x16http://google.comT@'
+            b"\x1d[\x00"
+        )
+        result = loads(raw_src)
+        self.assertEqual(
+            result,
+            [
+                b"1.3.7",
+                3,
+                b"a",
+                version,
+                date,  # "2010-05-27 18:00:00 +0200",
+                b"Summary",
+                requirement,
+                requirement,
+                b"ruby",
+                [],
+                None,
+                b" Email",
+                [b" Author"],
+                b"",
+                b"http://google.com",
+                True,
+                b"ruby",
+                [],
+            ],
+        )
 
 
 if __name__ == "__main__":
