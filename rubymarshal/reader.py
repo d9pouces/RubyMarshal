@@ -47,21 +47,23 @@ class Reader:
         self.fd = fd
         self.registry = registry or global_registry
 
-    def read(self, token=None):
-        if token is None:
-            token = self.fd.read(1)
+    def read(self, in_ivar=False):
+        result = None
+        object_index = None
+        re_flags = None
+
+        token = self.fd.read(1)
 
         # From https://docs.ruby-lang.org/en/2.1.0/marshal_rdoc.html:
         # The stream contains only one copy of each object for all objects except
         # true, false, nil, Fixnums and Symbols.
-        object_index = None
         if token in (
-            TYPE_IVAR,
             # TYPE_EXTENDED, TYPE_UCLASS, ????
             TYPE_CLASS,
             TYPE_MODULE,
             TYPE_FLOAT,
             TYPE_BIGNUM,
+            TYPE_STRING,
             TYPE_REGEXP,
             TYPE_ARRAY,
             TYPE_HASH,
@@ -69,11 +71,12 @@ class Reader:
             TYPE_OBJECT,
             TYPE_DATA,
             TYPE_USRMARSHAL,
+            TYPE_USERDEF,
         ):
-            self.objects.append(None)
             object_index = len(self.objects)
+            # placeholder for incomplete type
+            self.objects.append(None)
 
-        result = None
         if token == TYPE_NIL:
             pass
         elif token == TYPE_TRUE:
@@ -81,33 +84,9 @@ class Reader:
         elif token == TYPE_FALSE:
             result = False
         elif token == TYPE_IVAR:
-            sub_token = self.fd.read(1)
-            result = self.read(sub_token)
-            flags = None
-            if sub_token == TYPE_REGEXP:
-                options = ord(self.fd.read(1))
-                flags = 0
-                if options & 1:
-                    flags |= re.IGNORECASE
-                if options & 4:
-                    flags |= re.MULTILINE
-            attributes = self.read_attributes()
-            if sub_token in (TYPE_STRING, TYPE_REGEXP):
-                encoding = self._get_encoding(attributes)
-                try:
-                    result = result.decode(encoding)
-                except UnicodeDecodeError:
-                    result = result.decode("unicode-escape")
-            # string instance attributes are discarded
-            if attributes and sub_token == TYPE_STRING:
-                result = RubyString(result, attributes)
-            if sub_token == TYPE_REGEXP:
-                result = re.compile(str(result), flags)
-            elif attributes:
-                result.set_attributes(attributes)
+            result = self.read(in_ivar=True)
         elif token == TYPE_STRING:
-            size = self.read_long()
-            result = self.fd.read(size)
+            result = self.read_blob()
         elif token == TYPE_SYMBOL:
             result = self.read_symreal()
         elif token == TYPE_FIXNUM:
@@ -125,8 +104,7 @@ class Reader:
                 result[key] = value
             result = result
         elif token == TYPE_FLOAT:
-            size = self.read_long()
-            floatn = self.fd.read(size)
+            floatn = self.read_blob()
             floatn = floatn.split(b"\0")
             result = float(floatn[0].decode("utf-8"))
         elif token == TYPE_BIGNUM:
@@ -139,8 +117,13 @@ class Reader:
                 factor *= 2**16
             result *= sign
         elif token == TYPE_REGEXP:
-            size = self.read_long()
-            result = self.fd.read(size)
+            result = self.read_blob()
+            options = ord(self.fd.read(1))
+            re_flags = 0
+            if options & 1:
+                re_flags |= re.IGNORECASE
+            if options & 4:
+                re_flags |= re.MULTILINE
         elif token == TYPE_USRMARSHAL:
             class_symbol = self.read()
             if not isinstance(class_symbol, Symbol):
@@ -159,15 +142,23 @@ class Reader:
             result = self.read_symlink()
         elif token == TYPE_LINK:
             link_id = self.read_long()
-            if object_index and link_id >= object_index:
+            if link_id > len(self.objects):
                 raise ValueError(
-                    "invalid link destination: %d should be lower than %d."
-                    % (link_id, object_index)
+                    "invalid link destination: %d should be lower than %d or equal."
+                    % (link_id, len(self.objects))
                 )
+            # According to the documentation, objects are counted from 1.
+            # But it looks like they did not take the outermost object into account.
             result = self.objects[link_id]
+            if result is None:
+                # link to incomplete object
+                raise ValueError(
+                    "invalid link destination: Object id %d is not yet unmarshaled."
+                    % (link_id)
+                )
         elif token == TYPE_USERDEF:
             class_symbol = self.read()
-            private_data = self.read(TYPE_STRING)
+            private_data = self.read_blob()
             if not isinstance(class_symbol, Symbol):
                 raise ValueError("invalid class name: %r" % class_symbol)
             class_name = class_symbol.name
@@ -181,7 +172,7 @@ class Reader:
             # noinspection PyProtectedMember
             result._load(private_data)
         elif token == TYPE_MODULE:
-            data = self.read(TYPE_STRING)
+            data = self.read_blob()
             module_name = data.decode()
             result = Module(module_name, None)
         elif token == TYPE_OBJECT:
@@ -197,10 +188,10 @@ class Reader:
             attributes = self.read_attributes()
             result = python_class(class_name, attributes)
         elif token == TYPE_EXTENDED:
-            class_name = self.read(TYPE_STRING)
+            class_name = self.read_blob()
             result = Extended(class_name, None)
         elif token == TYPE_CLASS:
-            data = self.read(TYPE_STRING)
+            data = self.read_blob()
             class_name = data.decode()
             if class_name in self.registry:
                 result = self.registry[class_name]
@@ -212,8 +203,27 @@ class Reader:
                 )
         else:
             raise ValueError("token %s is not recognized" % token)
+
+        if in_ivar:
+            # The object has attributes.
+            attributes = self.read_attributes()
+            if token in (TYPE_STRING, TYPE_REGEXP):
+                encoding = self._get_encoding(attributes)
+                try:
+                    result = result.decode(encoding)
+                except UnicodeDecodeError:
+                    result = result.decode("unicode-escape")
+                # string instance attributes are discarded (on regex?)
+                if attributes and token == TYPE_STRING:
+                    result = RubyString(result, attributes)
+            elif attributes:
+                result.set_attributes(attributes)
+
+        if token == TYPE_REGEXP:
+            result = re.compile(str(result), re_flags)
+
         if object_index is not None:
-            self.objects[object_index - 1] = result
+            self.objects[object_index] = result
         return result
 
     @staticmethod
@@ -254,6 +264,10 @@ class Reader:
             result = result - factor
         return result
 
+    def read_blob(self):
+        size = self.read_long()
+        return self.fd.read(size)
+
     def read_symbol(self):
         ivar = 0
         while True:
@@ -274,8 +288,7 @@ class Reader:
         return self.symbols[symlink_id]
 
     def read_symreal(self):
-        size = self.read_long()
-        result = self.fd.read(size)
+        result = self.read_blob()
         result = Symbol(result.decode("utf-8"))
         self.symbols.append(result)
         return result
