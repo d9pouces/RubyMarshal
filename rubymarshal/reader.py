@@ -120,7 +120,7 @@ class Reader:
             num_elements = self.read_long()
             result = {}
             for x in range(num_elements):
-                key = self.read()
+                key = self.ensure_hashable(self.read())
                 value = self.read()
                 result[key] = value
             result = result
@@ -280,12 +280,21 @@ class Reader:
         self.symbols.append(result)
         return result
 
+    def ensure_hashable(self, value):
+        """Convert unhashable objects to hashable ones.
+
+        Currently only patches list objects  https://github.com/d9pouces/RubyMarshal/issues/10 .
+        """
+        if isinstance(value, list):
+            return tuple(self.ensure_hashable(x) for x in value)
+        return value
+
 
 def load(fd, registry=None):
     if fd.read(1) != b"\x04":
-        raise ValueError(r'Expected token \x04')
+        raise ValueError(r"Expected token \x04")
     if fd.read(1) != b"\x08":
-        raise ValueError(r'Expected token \x08')
+        raise ValueError(r"Expected token \x08")
 
     loader = Reader(fd, registry=registry)
     return loader.read()
