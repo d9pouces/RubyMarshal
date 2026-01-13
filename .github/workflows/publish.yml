@@ -19,7 +19,7 @@ jobs:
     - uses: actions/setup-python@v5.3.0
       with:
         python-version: ${{ matrix.python-version }}
-    - run: python3 -m pip install --user hypothesis pytest tox coverage uv
-    - run: python3 -m pytest --doctest-modules --doctest-glob=df_config/*.py --doctest-glob=df_config/**/*.py
+    - run: python3 -m pip install --user hypothesis pytest uv
+    - run: python3 -m pytest rubymarshal/tests
     - run: python3 -m uv build
     - run: python3 -m uv publish
