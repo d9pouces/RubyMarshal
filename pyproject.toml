@@ -1,39 +1,47 @@
 [build-system]
-build-backend = "poetry.core.masonry.api"
-requires = ["poetry-core"]
+build-backend = "hatchling.build"
+requires = ["hatchling"]
 
-[tool.poetry]
-authors = ["Matthieu Gallet <github@19pouces.net>"]
+[dependency-groups]
+dev = [
+  "hypothesis>=6.100.0,<7",
+  "pytest>=8.1.1,<9",
+  "tox>=4.23.2,<5"
+]
+
+[project]
+authors = [{name = "Matthieu Gallet", email = "github@19pouces.net"}]
 classifiers = [
-  'Development Status :: 5 - Production/Stable',
-  'Intended Audience :: System Administrators',
-  'License :: OSI Approved',
-  'Topic :: Utilities',
-  'Programming Language :: Python :: 3',
-  'Programming Language :: Python :: 3 :: Only',
-  'Programming Language :: Python :: 3.6',
-  'Programming Language :: Python :: 3.7',
-  'Programming Language :: Python :: 3.8',
-  'Programming Language :: Python :: 3.9',
-  'Programming Language :: Python :: 3.10',
-  'Programming Language :: Python :: 3.11',
-  'Programming Language :: Python :: 3.12',
-  'Programming Language :: Python :: 3.13'
+  "Development Status :: 5 - Production/Stable",
+  "Intended Audience :: System Administrators",
+  "License :: OSI Approved",
+  "Topic :: Utilities",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.6",
+  "Programming Language :: Python :: 3.7",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14"
 ]
 description = "Read and write Ruby-marshalled data"
-documentation = 'https://github.com/d9pouces/RubyMarshal'
 license = "WTFPL"
-maintainers = ["Matthieu Gallet <github@19pouces.net>"]
+maintainers = [{name = "Matthieu Gallet", email = "github@19pouces.net"}]
 name = "rubymarshal"
-packages = [{include = "rubymarshal"}]
 readme = "README.md"
-repository = 'https://github.com/interdiode/interdiode-logo'
-version = "1.2.9"
+requires-python = ">=3.8,<4"
+version = "1.2.10"
 
-[tool.poetry.dependencies]
-python = "^3.8"
+[project.urls]
+Documentation = "https://github.com/d9pouces/RubyMarshal"
+Repository = "https://github.com/interdiode/interdiode-logo"
 
-[tool.poetry.group.dev.dependencies]
-hypothesis = "^6.100.0"
-pytest = "^8.1.1"
-tox = "^4.23.2"
+[tool.hatch.build.targets.sdist]
+include = ["rubymarshal"]
+
+[tool.hatch.build.targets.wheel]
+include = ["rubymarshal"]

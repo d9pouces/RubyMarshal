@@ -1,0 +1,25 @@
+name: Basic unittests and publish
+on:
+  push:
+    branches:
+    - master
+jobs:
+  publish:
+    name: Python ${{ matrix.python-version }} / Django ${{ matrix.django-version }}
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        python-version: ['3.14']
+    env:
+      DJANGO_SETTINGS_MODULE: test_df_config.data.settings
+      POETRY_VIRTUALENVS_CREATE: false
+      UV_PUBLISH_TOKEN: ${{ secrets.UV_PUBLISH_TOKEN }}
+    steps:
+    - uses: actions/checkout@v4.2.2
+    - uses: actions/setup-python@v5.3.0
+      with:
+        python-version: ${{ matrix.python-version }}
+    - run: python3 -m pip install --user hypothesis pytest tox coverage uv
+    - run: python3 -m pytest --doctest-modules --doctest-glob=df_config/*.py --doctest-glob=df_config/**/*.py
+    - run: python3 -m uv build
+    - run: python3 -m uv publish
